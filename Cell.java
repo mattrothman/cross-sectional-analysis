@@ -1,6 +1,10 @@
 //To do
 //Create wrapper class "CellCollection" or something like that, holds a hashmap of cells, where key is the number label, value is the cell object
 /**
+Cell class holds a representation of a cell by storing a list of x and y coordinates of its parimeter
+*/
+
+/**
 Variables:
   xCoordinates //array of x-coordinates that correspond with the outside parimeter of the cell
   yCoordinates //array of x-coordinates that correspond with the outside parimeter of the cell
