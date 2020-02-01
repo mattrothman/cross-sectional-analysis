@@ -15,6 +15,8 @@ Methods:
                 checks if the coordinate is already inside an existing cell, checks diameter, if the cell does
                 not already exist and the maximum diameter is acceptable then calls click which uses ImageJ's 
                 wand, then calls addCell
+                
+                wand source code: https://github.com/imagej/imagej1/blob/master/ij/gui/Wand.java
     
     isRecorded //uses the Record class to check if a cell already exists in that coordinate. Calls the inside method of each recorded cell
     
