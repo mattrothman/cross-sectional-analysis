@@ -1,4 +1,10 @@
 /**
+Preprocesses image to sharpen the contrast and make it easier to distinguish cells.
+Things to consider: if the image is already preprocessed by the user danger in overprocessing? --> processing thickens cell 
+    border lines. Create inaccurate data?
+*/
+
+/**
 Variables:
     image //cell image
     
