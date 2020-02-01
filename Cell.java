@@ -1,9 +1,16 @@
 //To do
 //Create wrapper class "CellCollection" or something like that, holds a hashmap of cells, where key is the number label, value is the cell object
-//Create cell class where each cell has global variables xpoints, ypoints, 
-//and has methods inside(x, y)
-//Create Traverser class that traverses image, from left to right, searching for cell
-//Traverser class has globarl variables lastx, lasty that holds the last point that was checked for a cell,
-//click_distance, and has method click() which calls autooutline after checking whether new location is inside()
-//an already existing cell, and checkdiameter() which checks is a cell is large enough, addcell(), adds to cellcollection
-//Preprocessing class makes the image grayscale or black and white
+/**
+Variables:
+  xCoordinates //array of x-coordinates that correspond with the outside parimeter of the cell
+  yCoordinates //array of x-coordinates that correspond with the outside parimeter of the cell
+  cellNumber //??? holds the number idenifier assocated with the cell? do you guys think this is a good idea??
+ 
+ Methods:
+    inside --> parameters: x and y coordinates, returns: boolean //determines whether a given coordinate is inside the cell, modification of the 'inside' function in wand
+    
+    roundness --> parameters: ?, returns: boolean?  //determines if the cell is suffincently round (maybe there should be some class variables that hold standards for roundess?)
+    
+    calculateArea --> parameters: none?, returns: double //calculates area using the area function built into imageJ
+*/
+
