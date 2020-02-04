@@ -8,26 +8,26 @@ Variables:
     imageBoundary //holds the image boundary coordinates
     minDiameter //holds the minimum diameter of a cell. In otherwards, how big of a diameter must be able to fit somewhere in the cell outline
     image //holds the cell image
- 
+
 Methods:
-    
-    traverse //traverses to the next point in the image (calls isNextEdge, if the next right is past the edge, traverses down), 
+
+    traverse //traverses to the next point in the image (calls isNextEdge, if the next right is past the edge, traverses down),
                 checks if the coordinate is already inside an existing cell, checks diameter, if the cell does
-                not already exist and the maximum diameter is acceptable then calls click which uses ImageJ's 
+                not already exist and the maximum diameter is acceptable then calls click which uses ImageJ's
                 wand, then calls addCell
-                
+
                 wand source code: https://github.com/imagej/imagej1/blob/master/ij/gui/Wand.java
-    
+
     isRecorded //uses the Record class to check if a cell already exists in that coordinate. Calls the inside method of each recorded cell
-    
+
     checkDiameter //checks to see if the maximum diameter is acceptable using the minDiameter variable
-    
+
     addCell //creates a new Cell object and adds it to Record class
-    
+
     isNextEdge //determines whether the next right click will be off the edge of the image
-    
-    
-    
+
+
+
 */
 
 import java.awt.*;
@@ -59,19 +59,20 @@ public class Traverser {
   Wand wand;
   int traverseDistance; //holds the distance between clicks (pixels)
   //Is location supposed to be an array?
-  int location, x, y; //holds the current location (x,y coordinate) of where it is in the image
-  int[] imageBoundary; //holds the image boundary coordinates
+  int x, y; //holds the current location (x,y coordinate) of where it is in the image
+  int width; //holds the image boundary coordinates
+  int height;
   int minDiameter; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
   ImagePlus image; //holds the cell image, not sure about the type
   Record record;
-  
+
   //Do we need these things? Let's find out!
   // int width;
   // int height;
   // Roi roi;
   // ImageStack stack;
   // ImageStatistics stats;
-  
+
   //Stolen code and comment, but a debug mode is probably a very good idea ???
   // by declaring this static final, we allow javac to perform the test
   // at compile time rather than runtime, and remove debug code when
@@ -79,7 +80,7 @@ public class Traverser {
   // with the disadvantage that we cannot switch between debug and
   // release without a recompile.
   private static final boolean DEBUG = false;
-  
+
   /**
   * Creates a new Traverser
   */
@@ -90,7 +91,7 @@ public class Traverser {
     this.traverseDistance = traverseDistance;
     this.record = record;
     this.wand = wand;
-    
+
     //I don't know if we need this code, but I think we should leave it here for now...
     // this.stack = image.getStack();
     // //Is this true for us?
@@ -103,16 +104,16 @@ public class Traverser {
     //     roi = new Roi(0, 0, image.getWidth(), image.getHeight(), image);
     //     image.setRoi(roi);
     // }
-    
+
     int measurements = Analyzer.getMeasurements();
     Analyzer.setMeasurements(measurements);
-    
+
     // this.stats = image.getStatistics(measurements);
     // this.width = image.getWidth();
     // this.height = image.getHeight();
-    
+
   }
-  
+
   /**
   * Traverses the image, adding new cells to the record class when appropriate.
   */
@@ -120,7 +121,7 @@ public class Traverser {
     //while next point is valid
     //traverseOnce()
   }
-  
+
   /**
   * Traverses to the next point in the image.
   * If the point is inside a new, valid cell, a new cell is created and added to the record class.
@@ -134,7 +135,7 @@ public class Traverser {
     //if (!checkDiameter()) return;
     //addCell();
   }
-  
+
   /**
   * Checks whether the next point is already inside of a recorded cell.
   * @return  Whether or not the next point is already inside of a recorded cell
@@ -147,7 +148,7 @@ public class Traverser {
     //if cell.inside(nextpoint), return false
     //return true
   }
-  
+
   //ABOUT checkDiameter:
   //should any cell with an insufficient diameteer stil be added to record so that this process is not repeated?
   //We could mark these cells so that at the end of the process, they are deleted
@@ -163,17 +164,16 @@ public class Traverser {
     }
     return false;
   }
-  
+
   /**
   * Creates a new Cell object and adds it to Record class
   * @param   xpoints  The x coordinates of the points that outline the cell
   * @param   ypoints  The y coordinates of the points that outline the cell
   */
   public void addCell(int[] xpoints, int[] ypoints){
-    //Cell cell = new Cell(xpoints, ypoints);
-    //record.addCell(cell);
+    //record.addCell(xpoints, ypoints);
   }
-  
+
   /**
   * Calculates the nextPoint to be traversed to, and updates location or x and y?
   */
@@ -186,5 +186,3 @@ public class Traverser {
     this.x = nextX;
   }
 }
-
-

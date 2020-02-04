@@ -8,23 +8,23 @@ Cell class holds a representation of a cell by storing a list of x and y coordin
 */
 
 class Cell {
-   private ArrayList<Integer> xpoints;
-   private ArrayList<Integer> ypoints;
+   private int[] xpoints;
+   private int[] ypoints;
    private int cellId;
    private double area;
 
-   public Cell(ArrayList<Integer> newXpoints, ArrayList<Integer> newYpoints, int newCellId) {
+   public Cell(int[] newXpoints, int[] newYpoints, int newCellId) {
        xpoints = newXpoints;
        ypoints = newYpoints;
        cellId = newCellId;
-       area = calculateArea(xpoints, ypoints);
+       area = calculateArea();
    }
 
    public boolean inside(int ypoint, int xpoint) {
 
    }
 
-   public double calculateArea(ArrayList<Integer> xCoords, ArrayList<Integer> yCoords) {
+   public double calculateArea() {
 
    }
 
