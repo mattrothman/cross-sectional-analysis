@@ -32,6 +32,9 @@ class Cell {
 
    }
 
+   public int getCellId() { return cellId; }
+   public double getArea() { return area; }
+
 }
 
 /**

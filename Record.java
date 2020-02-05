@@ -1,3 +1,41 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+
+class Record {
+
+    // To-do: decide if this is the right data structure for the job
+    public HashMap<Integer, Cell> cells;
+
+    public Record() {
+        cells = new HashMap<>();
+    }
+
+    // We could make this return either the cell itself or the current record if we wanted to
+    public void addCell(Cell cellToAdd) {
+        cells.put(cellToAdd.getCellId(), cellToAdd);
+    }
+
+    public Cell removeCell(int cellId) {
+        return cells.remove(cellId);
+    }
+
+    public void printData(String fileLocation) throws FileNotFoundException {
+        File data = new File(fileLocation);
+        PrintWriter pw = new PrintWriter(data);
+
+        // This is probably not the way we will want the text file to look. Some sort of table would be best.
+        for (int current : cells.keySet()) {
+            Cell currCell = cells.get(current);
+            pw.println(currCell.getCellId() + ": " +currCell.getArea());
+        }
+
+        pw.close();
+    }
+}
+
+
 /**
 Holds all the Cell objects and prints a report with the cells and areas.
 */
