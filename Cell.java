@@ -15,6 +15,11 @@ class Cell {
    private int cellId;
    private double area;
    private Polygon shape;
+   //https://books.google.com/books?id=YEm5BQAAQBAJ&pg=PA735&lpg=PA735&dq=roundness+range+of+cells&source=bl&ots=EnoKFIoelk&sig=ACfU3U0FxVJIPjL3KEJtNMSTg0wchFnIWw&hl=en&ppis=_c&sa=X&ved=2ahUKEwiV1fDO8r3nAhUUoZ4KHY9DA_IQ6AEwDXoECAoQAQ#v=onepage&q=roundness%20range%20of%20cells&f=false
+   //Acorrding to link, roundness or a normal cell is 0.43-0.97
+   //and roundness of an abnormal cell is 0.06-0.87
+   //Starting value of
+   private static final double minRoundness  = 0.2; //This will change
    //declare a center coordinate
 
    public Cell(int[] xpoints, int[] ypoints, int newCellId) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
@@ -26,8 +31,10 @@ class Cell {
        area = calculateArea(shape);
    }
 
-   public boolean inside(int ypoint, int xpoint) {
-       return shape.inside(xpoint, ypoint);
+   public boolean contains(int ypoint, int xpoint) {
+       //Deprecated. As of JDK version 1.1, replaced by contains(int, int).
+       //return shape.inside(xpoint, ypoint);
+       return shape.contains(xpoint, ypoint);
 
    }
 
@@ -35,13 +42,45 @@ class Cell {
        return Analyzer.getArea(shape);
    }
 
+   //https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3544517/
+   //Roundness is based on the above article
    public boolean roundness(){
-        // roundness = area/(length^2)
-       //Polygon.getBounds()??
+    Rectangle bounds = shape.getBounds();
+    double height = bounds.getHeight();
+    double width = bounds.getWidth();
+    int length = width;
+    if(height > width){
+       length = height;
+    }
+    double roundness = this.area/(length^2)
+    if (roundness < minRoundness){
+      return false;
+    }
+    else{
+      return true;
+    }
+   }
+
+   //This method will not be used in final implementation!
+   //This method exists so we can get a range for the roundness or our cells
+   //So that we can adjust our minRoundness value
+   public boolean calcRoundness(){
+    Rectangle bounds = shape.getBounds();
+    double height = bounds.getHeight();
+    double width = bounds.getWidth();
+    int length = width;
+    if(height > width){
+       length = height;
+    }
+    double roundness = this.area/(length^2)
+    return roundness;
    }
 
    public int getCellId() { return cellId; }
+
    public double getArea() { return area; }
+
+   public Polygon getShape() { return shape; }
 
 }
 
