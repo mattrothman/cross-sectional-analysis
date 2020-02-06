@@ -4,6 +4,8 @@
 //import java.util.ArrayList;
 import ij.plugin.filter.Analyzer;
 import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.lang.Math;
 
 /**
 Cell class holds a representation of a cell by storing a list of x and y coordinates of its parimeter
@@ -48,11 +50,11 @@ class Cell {
     Rectangle bounds = shape.getBounds();
     double height = bounds.getHeight();
     double width = bounds.getWidth();
-    int length = width;
+    double length = width;
     if(height > width){
        length = height;
     }
-    double roundness = this.area/(length^2)
+    double roundness = this.area/(Math.pow(length, 2.0));
     if (roundness < minRoundness){
       return false;
     }
@@ -64,15 +66,15 @@ class Cell {
    //This method will not be used in final implementation!
    //This method exists so we can get a range for the roundness or our cells
    //So that we can adjust our minRoundness value
-   public boolean calcRoundness(){
+   public double calcRoundness(){
     Rectangle bounds = shape.getBounds();
     double height = bounds.getHeight();
     double width = bounds.getWidth();
-    int length = width;
+    double length = width;
     if(height > width){
        length = height;
     }
-    double roundness = this.area/(length^2)
+    double roundness = this.area/(Math.pow(length, 2.0));
     return roundness;
    }
 
