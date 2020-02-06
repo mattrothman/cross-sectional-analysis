@@ -12,6 +12,25 @@ import ij.plugin.filter.Analyzer;
 import java.awt.*;
 import ij.plugin.frame.*;
 
+//Matt added these, 2/5/20, not sure how many are necessary.
+import ij.IJ;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.WindowManager;
+import ij.gui.ImageWindow;
+import ij.gui.StackWindow;
+import ij.process.ImageProcessor;
+import ij.CompositeImage;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FileDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import ij.gui.Wand;
+
+
 /**
  * ImageJ plugin to measure the areas of skeletal muscle fibers.
  *
@@ -19,13 +38,64 @@ import ij.plugin.frame.*;
  */
 public class Cross-Sectional-Analyzer extends PlugInFrame implements Measurements{
 
-	public Plugin_Frame() {
-		super("Plugin_Frame");
+	ImagePlus img;
+	ImageProcessor ip;
+	Wand wand;
+	int minDiameter;
+	int traverseDistance;
+	Record record;
+
+	public Cross-Sectional-Analyzer() {
+		super("Cross-Sectional-Analyzer");
 		TextArea ta = new TextArea(15, 50);
 		add(ta);
 		pack();
 		GUI.center(this);
 		show();
+
+		initializeImage();
+		//Create a new wand
+		//Determine the traverseDistance based on the magnification and image setDimensions
+		//Determine minDiameter in same method as traverseDistance
+		//Create a new record
+		this.record = new Record();
 	}
+
+	private void initializeImage(){
+		this.img = WindowManager.getCurrentImage();
+    if (img==null){
+      IJ.noImage();
+    }
+		else if (img.getStackSize() == 1) {
+      this.ip = img.getProcessor();
+      ip.resetRoi();
+			//WTF is this?
+      // counterImg = new ImagePlus("Counter Window - "+img.getTitle(), ip);
+      // Vector displayList = v139t?img.getCanvas().getDisplayList():null;
+      // ic = new CellCntrImageCanvas(counterImg,typeVector,this,displayList);
+      // new ImageWindow(counterImg, ic);
+    }
+		else if (img.getStackSize() > 1){
+      ImageStack stack = img.getStack();
+      int size = stack.getSize();
+      ImageStack counterStack = img.createEmptyStack();
+      for (int i = 1; i <= size; i++){
+        ImageProcessor ip = stack.getProcessor(i);
+        // counterStack.addSlice(stack.getSliceLabel(i), ip);
+			}
+    }
+      // counterImg = new ImagePlus("Counter Window - "+img.getTitle(), counterStack);
+      // counterImg.setDimensions(img.getNChannels(), img.getNSlices(), img.getNFrames());
+      // if (img.isComposite()) {
+      //     counterImg = new CompositeImage(counterImg, ((CompositeImage)img).getMode());
+      //     ((CompositeImage) counterImg).copyLuts(img);
+      // }
+      // counterImg.setOpenAsHyperStack(img.isHyperStack());
+      // Vector displayList = v139t?img.getCanvas().getDisplayList():null;
+      // ic = new CellCntrImageCanvas(counterImg,typeVector,this,displayList);
+      // new StackWindow(counterImg, ic);
+  }
+}
+
 
 }

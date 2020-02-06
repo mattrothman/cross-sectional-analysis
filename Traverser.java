@@ -130,6 +130,8 @@ public class Traverser {
     //next point has already been checked, and is in the image
     //if (isRecorded()) return;
     //wand.autoOutline(x, y)
+    //OR
+    //wand.doWand(x, y, tolerance, mode)
     //int[] xpoints = wand.xpoints;
     //int[] ypoints = wand.ypoints;
     //if (!checkDiameter()) return;
