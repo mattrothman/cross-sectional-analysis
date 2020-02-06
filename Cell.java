@@ -15,6 +15,7 @@ class Cell {
    private int cellId;
    private double area;
    private Polygon shape;
+   //declare a center coordinate
 
    public Cell(int[] xpoints, int[] ypoints, int newCellId) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
        //xpoints = newXpoints;
@@ -35,7 +36,8 @@ class Cell {
    }
 
    public boolean roundness(){
-
+        // roundness = area/(length^2)
+       //Polygon.getBounds()??
    }
 
    public int getCellId() { return cellId; }
