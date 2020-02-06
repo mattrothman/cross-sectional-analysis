@@ -33,6 +33,43 @@ class Record {
 
         pw.close();
     }
+
+    /**
+     * Checks to see if there is already an existing cell in record that contains the given point.
+      * @param x
+     * @param y
+     * @return
+     */
+    public boolean cellExists(int x, int y) {
+
+        // This is probably not the way we will want the text file to look. Some sort of table would be best.
+        for (int current : cells.keySet()) {
+            Cell currCell = cells.get(current);
+            if (currCell.contains(x,y)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if there is already an existing cell in record that contains the given point.
+     * @param x
+     * @param y
+     * @return
+     */
+    //FINISH
+    public boolean cellCellId(int x, int y) {
+
+        // This is probably not the way we will want the text file to look. Some sort of table would be best.
+        for (int current : cells.keySet()) {
+            Cell currCell = cells.get(current);
+            if (currCell.contains(x,y)) {
+                return current;
+            }
+        }
+        return -1;
+    }
 }
 
 

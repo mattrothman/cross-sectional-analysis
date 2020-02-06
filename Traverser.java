@@ -54,6 +54,9 @@ import ij.measure.*;
 * @author
 */
 
+//look into do-wand wand auto-line tolerence 19
+
+
 //Should it: extends PlugInFrame implements Measurements ??
 public class Traverser {
   Wand wand;
@@ -146,6 +149,10 @@ public class Traverser {
   * or -1 if the next point is not already inside of a recorded cell.
   */
   public boolean isRecorded(){ //OR public int isRecorded(){
+    if (record.cellExists(x, y)) {
+      return true;
+    }
+    return false;
     //for all cells in recorded
     //if cell.inside(nextpoint), return false
     //return true
@@ -173,7 +180,8 @@ public class Traverser {
   * @param   ypoints  The y coordinates of the points that outline the cell
   */
   public void addCell(int[] xpoints, int[] ypoints){
-    //record.addCell(xpoints, ypoints);
+    record.addCell(xpoints, ypoints, );
+    //public Cell(int[] xpoints, int[] ypoints, int newCellId)
   }
 
   /**
