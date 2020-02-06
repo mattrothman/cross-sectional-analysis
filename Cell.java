@@ -1,31 +1,37 @@
 //To do
 //Create wrapper class "CellCollection" or something like that, holds a hashmap of cells, where key is the number label, value is the cell object
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
+import ij.plugin.filter.Analyzer;
+import java.awt.Polygon;
 
 /**
 Cell class holds a representation of a cell by storing a list of x and y coordinates of its parimeter
 */
 
 class Cell {
-   private int[] xpoints;
-   private int[] ypoints;
+   //private int[] xpoints;
+   //private int[] ypoints;
    private int cellId;
    private double area;
+   private Polygon shape;
 
-   public Cell(int[] newXpoints, int[] newYpoints, int newCellId) {
-       xpoints = newXpoints;
-       ypoints = newYpoints;
+   public Cell(int[] xpoints, int[] ypoints, int newCellId) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
+       //xpoints = newXpoints;
+       //ypoints = newYpoints;
+       Polygon cell = new Polygon(xpoints, ypoints, xpoints.length);
+       shape = cell;
        cellId = newCellId;
-       area = calculateArea();
+       area = calculateArea(shape);
    }
 
    public boolean inside(int ypoint, int xpoint) {
+       return shape.inside(xpoint, ypoint);
 
    }
 
-   public double calculateArea() {
-
+   public double calculateArea(Polygon shape) {
+       return Analyzer.getArea(shape);
    }
 
    public boolean roundness(){
