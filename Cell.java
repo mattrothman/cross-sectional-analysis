@@ -14,7 +14,6 @@ Cell class holds a representation of a cell by storing a list of x and y coordin
 class Cell {
    //private int[] xpoints;
    //private int[] ypoints;
-   private int cellId;
    private double area;
    private Polygon shape;
    //https://books.google.com/books?id=YEm5BQAAQBAJ&pg=PA735&lpg=PA735&dq=roundness+range+of+cells&source=bl&ots=EnoKFIoelk&sig=ACfU3U0FxVJIPjL3KEJtNMSTg0wchFnIWw&hl=en&ppis=_c&sa=X&ved=2ahUKEwiV1fDO8r3nAhUUoZ4KHY9DA_IQ6AEwDXoECAoQAQ#v=onepage&q=roundness%20range%20of%20cells&f=false
@@ -29,7 +28,6 @@ class Cell {
        //ypoints = newYpoints;
        Polygon cell = new Polygon(xpoints, ypoints, xpoints.length);
        shape = cell;
-       cellId = newCellId;
        area = calculateArea(shape);
    }
 
@@ -77,8 +75,6 @@ class Cell {
     double roundness = this.area/(Math.pow(length, 2.0));
     return roundness;
    }
-
-   public int getCellId() { return cellId; }
 
    public double getArea() { return area; }
 

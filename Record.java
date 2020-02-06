@@ -1,24 +1,20 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 class Record {
 
     // To-do: decide if this is the right data structure for the job
-    public HashMap<Integer, Cell> cells;
+    public ArrayList<Cell> cells;
 
     public Record() {
-        cells = new HashMap<>();
+        cells = new ArrayList<>();
     }
 
     // We could make this return either the cell itself or the current record if we wanted to
     public void addCell(Cell cellToAdd) {
-        cells.put(cellToAdd.getCellId(), cellToAdd);
-    }
-
-    public Cell removeCell(int cellId) {
-        return cells.remove(cellId);
+        cells.add(cellToAdd);
     }
 
     public void printData(String fileLocation) throws FileNotFoundException {
@@ -26,9 +22,9 @@ class Record {
         PrintWriter pw = new PrintWriter(data);
 
         // This is probably not the way we will want the text file to look. Some sort of table would be best.
-        for (int current : cells.keySet()) {
-            Cell currCell = cells.get(current);
-            pw.println(currCell.getCellId() + ": " +currCell.getArea());
+        for (int i = 0; i < cells.size(); i++) {
+            Cell currCell = cells.get(i);
+            pw.println(i + ": " +currCell.getArea());
         }
 
         pw.close();
@@ -42,35 +38,35 @@ class Record {
      */
     public boolean cellExists(int x, int y) {
 
-        // This is probably not the way we will want the text file to look. Some sort of table would be best.
-        for (int current : cells.keySet()) {
-            Cell currCell = cells.get(current);
+        for (int i = 0; i < cells.size(); i ++) {
+            Cell currCell = cells.get(i);
             if (currCell.contains(x,y)) {
                 return true;
             }
         }
         return false;
     }
-
-    /**
-     * Checks to see if there is already an existing cell in record that contains the given point.
-     * @param x
-     * @param y
-     * @return
-     */
-    //FINISH
-    public boolean cellCellId(int x, int y) {
-
-        // This is probably not the way we will want the text file to look. Some sort of table would be best.
-        for (int current : cells.keySet()) {
-            Cell currCell = cells.get(current);
-            if (currCell.contains(x,y)) {
-                return current;
-            }
-        }
-        return -1;
-    }
 }
+
+
+//     /**
+//      * Checks to see if there is already an existing cell in record that contains the given point.
+//      * @param x
+//      * @param y
+//      * @return
+//      */
+//     //FINISH
+//     public int cellCellId(int x, int y) {
+
+//         for (int current : cells.keySet()) {
+//             Cell currCell = cells.get(current);
+//             if (currCell.contains(x,y)) {
+//                 return current;
+//             }
+//         }
+//         return -1;
+//     }
+
 
 
 /**
