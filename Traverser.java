@@ -121,6 +121,9 @@ public class Traverser {
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse(){
+    while (y < hight){
+      traverseOnce();
+    }
     //while next point is valid
     //traverseOnce()
   }
@@ -130,6 +133,14 @@ public class Traverser {
   * If the point is inside a new, valid cell, a new cell is created and added to the record class.
   */
   public void traverseOnce(){
+    if (!isRecorded()) {
+      //doWand(x, y, tolerance, mode)
+      //checkDiameter()
+      addCell(int[] xpoints, int[] ypoints)
+
+    }
+
+    nextPoint();
     //next point has already been checked, and is in the image
     //if (isRecorded()) return;
     //wand.autoOutline(x, y)
@@ -180,7 +191,8 @@ public class Traverser {
   * @param   ypoints  The y coordinates of the points that outline the cell
   */
   public void addCell(int[] xpoints, int[] ypoints){
-    record.addCell(xpoints, ypoints, );
+    Cell cell = new Cell(xpoints, ypoints);
+    record.addCell(cell);
     //public Cell(int[] xpoints, int[] ypoints, int newCellId)
   }
 
