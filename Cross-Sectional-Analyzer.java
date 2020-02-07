@@ -36,29 +36,35 @@ import ij.gui.Wand;
  *
  * @author Matthew Rothman, Nalin Richardson, Thalia Barr-Malec
  */
-public class Cross-Sectional-Analyzer extends PlugInFrame implements Measurements{
+public class CrossSectionalAnalyzer extends PlugInFrame implements Measurements{
 
 	ImagePlus img;
 	ImageProcessor ip;
 	Wand wand;
-	int minDiameter;
-	int traverseDistance;
-	Record record;
+	private static final int minDiameter = 3;
+	private static final int traverseDistance 5;
+	//Record record;
 
-	public Cross-Sectional-Analyzer() {
-		super("Cross-Sectional-Analyzer");
-		TextArea ta = new TextArea(15, 50);
-		add(ta);
-		pack();
-		GUI.center(this);
-		show();
+	public CrossSectionalAnalyzer() {
+		// super("CrossSectionalAnalyzer");
+		// TextArea ta = new TextArea(15, 50);
+		// add(ta);
+		// pack();
+		// GUI.center(this);
+		// show();
 
 		initializeImage();
 		//Create a new wand
+			this.wand = new Wand(ip);
 		//Determine the traverseDistance based on the magnification and image setDimensions
 		//Determine minDiameter in same method as traverseDistance
 		//Create a new record
 		this.record = new Record();
+	}
+
+
+	void run(ImageProcessor ip){
+		wand.autoOutline(10,10);
 	}
 
 	private void initializeImage(){
