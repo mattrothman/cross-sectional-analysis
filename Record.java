@@ -9,11 +9,12 @@ class Record {
     public ArrayList<Cell> cells;
 
     public Record() {
-        cells = new ArrayList<>();
+      this.cells = new ArrayList<>();
     }
 
     // We could make this return either the cell itself or the current record if we wanted to
-    public void addCell(Cell cellToAdd) {
+    public void addCell(int[] xpoints, int[] ypoints) {
+        Cell cellToAdd = new Cell(xpoints, ypoints);
         cells.add(cellToAdd);
     }
 
@@ -32,13 +33,12 @@ class Record {
 
     /**
      * Checks to see if there is already an existing cell in record that contains the given point.
-      * @param x
+     * @param x
      * @param y
-     * @return
+     * @return Whether there exists a cell in record that contains the given point
      */
     public boolean cellExists(int x, int y) {
-
-        for (int i = 0; i < cells.size(); i ++) {
+        for (int i = 0; i < cells.size(); i++) {
             Cell currCell = cells.get(i);
             if (currCell.contains(x,y)) {
                 return true;
@@ -80,6 +80,6 @@ Variables:
 Methods:
 
     addCell //adds a Cell object to the cells variable
-    
+
     printData //creates file and writes each cell number with it's corresponding area
 */

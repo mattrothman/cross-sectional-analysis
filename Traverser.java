@@ -49,9 +49,10 @@ import ij.plugin.frame.PlugInFrame;
 import ij.measure.*;
 
 /**
-* Traverser class traverses an image, from left to right, outlining cells.
+* The traverser class traverses an image, from left to right,
+* identifying unique cells, and adding them to the Record.
 *
-* @author
+* @author Matthew Rothman, Nalin Richardson, Thalia Barr-Malec
 */
 
 //look into do-wand wand auto-line tolerence 19
@@ -60,13 +61,12 @@ import ij.measure.*;
 //Should it: extends PlugInFrame implements Measurements ??
 public class Traverser {
   Wand wand;
-  int traverseDistance; //holds the distance between clicks (pixels)
-  //Is location supposed to be an array?
-  int x, y; //holds the current location (x,y coordinate) of where it is in the image
-  int width; //holds the image boundary coordinates
-  int height;
+  int traverseDistance; //The distance between in pixels between calls of traverseOnce()
+  int x, y; //The location (x,y coordinate) of the current pixel
   int minDiameter; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
-  ImagePlus image; //holds the cell image, not sure about the type
+  ImagePlus image;
+  int width; //The width of image
+  int height; //The heght of image
   Record record;
 
   //Do we need these things? Let's find out!
@@ -83,6 +83,7 @@ public class Traverser {
   // with the disadvantage that we cannot switch between debug and
   // release without a recompile.
   private static final boolean DEBUG = false;
+  public final static int LEGACY_MODE = 1;
 
   /**
   * Creates a new Traverser
@@ -94,6 +95,8 @@ public class Traverser {
     this.traverseDistance = traverseDistance;
     this.record = record;
     this.wand = wand;
+    this.x = traverseDistance;
+    this.y = traverseDistance;
 
     //I don't know if we need this code, but I think we should leave it here for now...
     // this.stack = image.getStack();
@@ -121,11 +124,9 @@ public class Traverser {
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse(){
-    while (y < hight){
+    while (this.y < this.height){
       traverseOnce();
     }
-    //while next point is valid
-    //traverseOnce()
   }
 
   /**
@@ -135,21 +136,14 @@ public class Traverser {
   public void traverseOnce(){
     if (!isRecorded()) {
       //doWand(x, y, tolerance, mode)
-      //checkDiameter()
-      addCell(int[] xpoints, int[] ypoints)
-
+      wand.autoOutline(this.x, this.y, 19.0, LEGACY_MODE);
+      int[] xpoints = wand.xpoints;
+      int[] ypoints = wand.ypoints;
+      if(checkDiameter()){
+        addCell(xpoints, ypoints);
+      }
     }
-
     nextPoint();
-    //next point has already been checked, and is in the image
-    //if (isRecorded()) return;
-    //wand.autoOutline(x, y)
-    //OR
-    //wand.doWand(x, y, tolerance, mode)
-    //int[] xpoints = wand.xpoints;
-    //int[] ypoints = wand.ypoints;
-    //if (!checkDiameter()) return;
-    //addCell();
   }
 
   /**
@@ -160,13 +154,10 @@ public class Traverser {
   * or -1 if the next point is not already inside of a recorded cell.
   */
   public boolean isRecorded(){ //OR public int isRecorded(){
-    if (record.cellExists(x, y)) {
+    if (record.cellExists(this.x, this.y)) {
       return true;
     }
     return false;
-    //for all cells in recorded
-    //if cell.inside(nextpoint), return false
-    //return true
   }
 
   //ABOUT checkDiameter:
@@ -191,18 +182,16 @@ public class Traverser {
   * @param   ypoints  The y coordinates of the points that outline the cell
   */
   public void addCell(int[] xpoints, int[] ypoints){
-    Cell cell = new Cell(xpoints, ypoints);
-    record.addCell(cell);
-    //public Cell(int[] xpoints, int[] ypoints, int newCellId)
+    record.addCell(xpoints, ypoints);
   }
 
   /**
-  * Calculates the nextPoint to be traversed to, and updates location or x and y?
+  * Calculates the nextPoint to be traversed to, and updates location or x and y
   */
   public void nextPoint(){
     int nextX = this.x + this.traverseDistance;
     if (nextX > this.width){
-      nextX = 0;
+      nextX = this.traverseDistance;
       this.y = this.y + this.traverseDistance;
     }
     this.x = nextX;

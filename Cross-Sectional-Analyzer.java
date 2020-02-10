@@ -42,7 +42,7 @@ public class CrossSectionalAnalyzer extends PlugInFrame implements Measurements{
 	ImageProcessor ip;
 	Wand wand;
 	private static final int minDiameter = 3;
-	private static final int traverseDistance 5;
+	private static final int traverseDistance = 5;
 	//Record record;
 
 	public CrossSectionalAnalyzer() {

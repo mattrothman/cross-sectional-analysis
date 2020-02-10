@@ -23,7 +23,7 @@ class Cell {
    private static final double minRoundness  = 0.2; //This will change
    //declare a center coordinate
 
-   public Cell(int[] xpoints, int[] ypoints, int newCellId) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
+   public Cell(int[] xpoints, int[] ypoints) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
        //xpoints = newXpoints;
        //ypoints = newYpoints;
        Polygon cell = new Polygon(xpoints, ypoints, xpoints.length);
