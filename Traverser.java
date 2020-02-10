@@ -48,6 +48,35 @@ import ij.gui.Wand;
 import ij.plugin.frame.PlugInFrame;
 import ij.measure.*;
 
+// It would be a lot of work to figure out which imports are necessary for the doWand method and which are not.
+//    I propose we keep them all in and then delete the extraneous ones once we put it in imageJ and packages are actually recognized
+package ij;
+import ij.text.*;
+import ij.io.*;
+import ij.plugin.*;
+import ij.plugin.filter.*;
+import ij.util.Tools;
+import ij.plugin.frame.Recorder;
+import ij.plugin.frame.ThresholdAdjuster;
+import ij.macro.Interpreter;
+import ij.macro.MacroRunner;
+import ij.measure.Calibration;
+import ij.measure.ResultsTable;
+import ij.measure.Measurements;
+import java.awt.event.*;
+import java.text.*;
+import java.util.*;
+import java.awt.*;
+import java.applet.Applet;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import javax.net.ssl.*;
+import java.security.cert.*;
+import java.security.KeyStore;
+import java.nio.ByteBuffer;
+
+
 /**
 * The traverser class traverses an image, from left to right,
 * identifying unique cells, and adding them to the Record.
@@ -136,7 +165,8 @@ public class Traverser {
   public void traverseOnce(){
     if (!isRecorded()) {
       //doWand(x, y, tolerance, mode)
-      wand.autoOutline(this.x, this.y, 19.0, LEGACY_MODE);
+      //wand.autoOutline(this.x, this.y, 19.0, LEGACY_MODE);
+      Wand wand = doWand(image, x, y);
       int[] xpoints = wand.xpoints;
       int[] ypoints = wand.ypoints;
       if(checkDiameter()){
@@ -196,4 +226,28 @@ public class Traverser {
     }
     this.x = nextX;
   }
+
+
+
+  /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
+  public static Wand doWand(ImagePlus img, int x, int y) {
+    double tolerance = 19;
+    ImageProcessor ip = img.getProcessor();
+    if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y))) //I don't actually know what this checks for so I just returned null-- we can edit later
+      Wand w = null;
+      return w;
+
+    int imode = Wand.LEGACY_MODE;
+
+
+    Wand w = new Wand(ip);
+    double t1 = ip.getMinThreshold();
+    if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
+      w.autoOutline(x, y, tolerance, imode);
+    } else
+      w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
+
+    return w;
+  }
+}
 }
