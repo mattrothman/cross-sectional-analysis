@@ -3,7 +3,7 @@
 ## Creating the .jar
 1. Turn all .java to .class by using imageJ's compile and run
 
-2. Inside working directory call compile code to create jar executable
+2. Inside working directory, use command line to create jar executable
     
     `jar cvfm Cross_Sectional_Analyzer.jar manifest.txt *.class`
 
