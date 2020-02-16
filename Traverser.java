@@ -96,6 +96,8 @@ public class Traverser {
   ImagePlus image;
   int width; //The width of image
   int height; //The heght of image
+  double TOLERANCE = 19;
+
   Record record;
 
   //Do we need these things? Let's find out!
@@ -230,8 +232,7 @@ public class Traverser {
 
 
   /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
-  public static Wand doWand(ImagePlus img, int x, int y) {
-    double tolerance = 19;
+  public Wand doWand(ImagePlus img, int x, int y) {
     ImageProcessor ip = img.getProcessor();
     if ((img.getType()==ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x,y))) //I don't actually know what this checks for so I just returned null-- we can edit later
       Wand w = null;
@@ -243,7 +244,7 @@ public class Traverser {
     Wand w = new Wand(ip);
     double t1 = ip.getMinThreshold();
     if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
-      w.autoOutline(x, y, tolerance, imode);
+      w.autoOutline(x, y, TOLERANCE, imode);
     } else
       w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
 
