@@ -2,7 +2,7 @@ import ij.process.*;
 
 class Preprocessor {
     ImagePlus imp;
-    ImageProcessor ip
+    ImageProcessor ip;
 
     public Preprocessor(ImagePlus imp, ImageProcessor ip) {
         this.imp = imp;

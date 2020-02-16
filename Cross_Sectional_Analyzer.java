@@ -35,9 +35,9 @@ public class Cross_Sectional_Analyzer implements PlugInFilter{
 	private int        size;            // Total number of pixels
 	//private Record record;
 
-	public void static main(String[] args) {
+	public static void main(String[] args) {
 		Cross_Sectional_Analyzer csa = new Cross_Sectional_Analyzer();
-		csa.setup("");
+		csa.setup("", null);
 	}
 
 	public int setup(String arg, ImagePlus imp){
