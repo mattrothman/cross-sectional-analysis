@@ -6,6 +6,7 @@ import ij.plugin.filter.Analyzer;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.lang.Math;
+import java.util.Arrays;
 
 /**
 Cell class holds a representation of a cell by storing a list of x and y coordinates of its parimeter
@@ -31,16 +32,26 @@ class Cell {
        area = calculateArea(shape);
    }
 
-   public boolean contains(int ypoint, int xpoint) {
+   public boolean contains(int xpoint, int ypoint) {
        //Deprecated. As of JDK version 1.1, replaced by contains(int, int).
        //return shape.inside(xpoint, ypoint);
        return shape.contains(xpoint, ypoint);
 
    }
+// Unfortunately the imageJ method using getArea was private so I copied the code over.
+    public final double calculateArea(Polygon p) {
+        if (p==null) return Double.NaN;
+        int carea = 0;
+        int iminus1;
+        for (int i=0; i<p.npoints; i++) {
+            iminus1 = i-1;
+            if (iminus1<0) iminus1=p.npoints-1;
+            carea += (p.xpoints[i]+p.xpoints[iminus1])*(p.ypoints[i]-p.ypoints[iminus1]);
+        }
+        return (Math.abs(carea/2.0));
+    }
 
-   public double calculateArea(Polygon shape) {
-       return Analyzer.getArea(shape);
-   }
+
 
    //https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3544517/
    //Roundness is based on the above article
@@ -79,6 +90,12 @@ class Cell {
    public double getArea() { return area; }
 
    public Polygon getShape() { return shape; }
+
+   public String toString(){
+       String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.xpoints);
+       return toString;
+
+   }
 
 }
 
