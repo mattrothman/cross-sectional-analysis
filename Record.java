@@ -9,7 +9,7 @@ class Record {
     public ArrayList<Cell> cells;
 
     public Record() {
-      this.cells = new ArrayList<>();
+        this.cells = new ArrayList();
     }
 
     // We could make this return either the cell itself or the current record if we wanted to
