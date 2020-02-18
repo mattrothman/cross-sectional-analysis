@@ -76,6 +76,9 @@ import java.security.cert.*;
 import java.security.KeyStore;
 import java.nio.ByteBuffer;
 
+//for doWand
+import ij.macro.MacroRunner;
+import ij.plugin.BatchProcessor;
 
 /**
 * The traverser class traverses an image, from left to right,
@@ -96,8 +99,7 @@ public class Traverser {
   ImagePlus image;
   int width; //The width of image
   int height; //The heght of image
-  double TOLERANCE = 19;
-
+  double TOLERANCE = 19.0;
   Record record;
 
   //Do we need these things? Let's find out!
@@ -151,103 +153,117 @@ public class Traverser {
     // this.height = image.getHeight();
   }
 
-    /**
-     * Traverses the image, adding new cells to the record class when appropriate.
-     */
-    public void traverse () {
-      while (this.y < this.height) {
-        traverseOnce();
-      }
-    }
-
-    /**
-     * Traverses to the next point in the image.
-     * If the point is inside a new, valid cell, a new cell is created and added to the record class.
-     */
-    public void traverseOnce () {
-      if (!isRecorded()) {
-        //doWand(x, y, tolerance, mode)
-        //wand.autoOutline(this.x, this.y, 19.0, LEGACY_MODE);
-        Wand wand = doWand(image, x, y);
-        int[] xpoints = wand.xpoints;
-        int[] ypoints = wand.ypoints;
-        //if (checkDiameter()) {
-          addCell(xpoints, ypoints); // until we find a way to check the diameter we should keep this commented out
-        }
-      //}
-      nextPoint();
-    }
-
-    /**
-     * Checks whether the next point is already inside of a recorded cell.
-     * @return Whether or not the next point is already inside of a recorded cell
-     * OR
-     * @return Either the number of cell that the next point is inside,
-     * or -1 if the next point is not already inside of a recorded cell.
-     */
-    public boolean isRecorded () { //OR public int isRecorded(){
-      if (record.cellExists(this.x, this.y)) {
-        return true;
-      }
-      return false;
-    }
-
-    //ABOUT checkDiameter:
-    //should any cell with an insufficient diameteer stil be added to record so that this process is not repeated?
-    //We could mark these cells so that at the end of the process, they are deleted
-    /**
-     * Checks whether a new cell is large enough to be considered a cell.
-     * @return whether a new cell is large enough to be considered a cell
-     */
-    public boolean checkDiameter () {
-      //TODO: Calculate the maximum diameter of the cell
-      int maxDiameter = 0;
-      if (maxDiameter >= minDiameter) {
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * Creates a new Cell object and adds it to Record class
-     * @param   xpoints  The x coordinates of the points that outline the cell
-     * @param   ypoints  The y coordinates of the points that outline the cell
-     */
-    public void addCell ( int[] xpoints, int[] ypoints){
-      record.addCell(xpoints, ypoints);
-    }
-
-    /**
-     * Calculates the nextPoint to be traversed to, and updates location or x and y
-     */
-    public void nextPoint () {
-      int nextX = this.x + this.traverseDistance;
-      if (nextX > this.width) {
-        nextX = this.traverseDistance;
-        this.y = this.y + this.traverseDistance;
-      }
-      this.x = nextX;
-    }
-
-
-    /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
-    public Wand doWand (ImagePlus img,int x, int y){
-      ImageProcessor ip = img.getProcessor();
-      if ((img.getType() == ImagePlus.GRAY32) && Double.isNaN(ip.getPixelValue(x, y))) //I don't actually know what this checks for so I just returned null-- we can edit later
-        Wand w = null;
-      return w;
-
-      int imode = Wand.LEGACY_MODE;
-
-
-      Wand w = new Wand(ip);
-      double t1 = ip.getMinThreshold();
-      if (t1 == ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode() == ImageProcessor.NO_LUT_UPDATE && tolerance > 0.0)) {
-        w.autoOutline(x, y, TOLERANCE, imode);
-      } else
-        w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-
-      return w;
+  /**
+   * Traverses the image, adding new cells to the record class when appropriate.
+   */
+  public void traverse () {
+    while (this.y < this.height) {
+      traverseOnce();
     }
   }
 
+  /**
+   * Traverses to the next point in the image.
+   * If the point is inside a new, valid cell, a new cell is created and added to the record class.
+   */
+  public void traverseOnce () {
+    if (!isRecorded()) {
+      //doWand(x, y, tolerance, mode)
+      //wand.autoOutline(this.x, this.y, 19.0, LEGACY_MODE);
+      Wand wand = doWand(x, y, TOLERANCE);
+      int[] xpoints = wand.xpoints;
+      int[] ypoints = wand.ypoints;
+      //if (checkDiameter()) {
+        addCell(xpoints, ypoints); // until we find a way to check the diameter we should keep this commented out
+      }
+    //}
+    nextPoint();
+  }
+
+  /**
+   * Checks whether the next point is already inside of a recorded cell.
+   * @return Whether or not the next point is already inside of a recorded cell
+   * OR
+   * @return Either the number of cell that the next point is inside,
+   * or -1 if the next point is not already inside of a recorded cell.
+   */
+  public boolean isRecorded () { //OR public int isRecorded(){
+    if (record.cellExists(this.x, this.y)) {
+      return true;
+    }
+    return false;
+  }
+
+  //ABOUT checkDiameter:
+  //should any cell with an insufficient diameteer stil be added to record so that this process is not repeated?
+  //We could mark these cells so that at the end of the process, they are deleted
+  /**
+   * Checks whether a new cell is large enough to be considered a cell.
+   * @return whether a new cell is large enough to be considered a cell
+   */
+  public boolean checkDiameter () {
+    //TODO: Calculate the maximum diameter of the cell
+    int maxDiameter = 0;
+    if (maxDiameter >= minDiameter) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Creates a new Cell object and adds it to Record class
+   * @param   xpoints  The x coordinates of the points that outline the cell
+   * @param   ypoints  The y coordinates of the points that outline the cell
+   */
+  public void addCell ( int[] xpoints, int[] ypoints){
+    record.addCell(xpoints, ypoints);
+  }
+
+  /**
+   * Calculates the nextPoint to be traversed to, and updates location or x and y
+   */
+  public void nextPoint () {
+    int nextX = this.x + this.traverseDistance;
+    if (nextX > this.width) {
+      nextX = this.traverseDistance;
+      this.y = this.y + this.traverseDistance;
+    }
+    this.x = nextX;
+  }
+
+
+    /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
+  public Wand doWand(int x, int y, double tolerance) {
+    int imode = Wand.LEGACY_MODE;
+		boolean smooth = false;
+    Wand w = new Wand(ip);
+
+    double t1 = ip.getMinThreshold();
+    if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
+      w.autoOutline(x, y, tolerance, imode);
+    } else
+      w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
+		if (w.npoints>0) {
+			Roi previousRoi = imp.getRoi();
+			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+			imp.deleteRoi();
+			imp.setRoi(roi);
+			if (previousRoi!=null)
+				roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
+			Roi roi2 = imp.getRoi();
+			if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
+				Rectangle bounds = roi2.getBounds();
+				if (bounds.width>1 && bounds.height>1) {
+					String smoothMacro = null;
+					if (smoothMacro==null)
+						smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
+					if (EventQueue.isDispatchThread())
+						new MacroRunner(smoothMacro); // run on separate thread
+					else
+						Macro.eval(smoothMacro);
+				}
+			}
+		}
+    return w;
+  }
+}
