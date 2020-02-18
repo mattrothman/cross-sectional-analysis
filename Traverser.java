@@ -121,16 +121,16 @@ public class Traverser {
   /**
    * Creates a new Traverser
    */
-  public Traverser(ImagePlus image, Wand wand, int minDiameter, int traverseDistance, Record record) {
+  public Traverser(ImagePlus image,int minDiameter, int traverseDistance, Record record) {
     if (DEBUG) IJ.log("Traverser being constructed...");
     this.image = image;
     this.minDiameter = minDiameter;
     this.traverseDistance = traverseDistance;
     this.record = record;
-    this.wand = wand;
     this.x = traverseDistance;
     this.y = traverseDistance;
     this.height = image.getHeight();
+    this.width = image.getWidth();
 
     //I don't know if we need this code, but I think we should leave it here for now...
     // this.stack = image.getStack();
@@ -144,13 +144,9 @@ public class Traverser {
     //     roi = new Roi(0, 0, image.getWidth(), image.getHeight(), image);
     //     image.setRoi(roi);
     // }
-
-    int measurements = Analyzer.getMeasurements();
-    Analyzer.setMeasurements(measurements);
-
+    // int measurements = Analyzer.getMeasurements();
+    // Analyzer.setMeasurements(measurements);
     // this.stats = image.getStatistics(measurements);
-    // this.width = image.getWidth();
-    // this.height = image.getHeight();
   }
 
   /**
@@ -174,9 +170,9 @@ public class Traverser {
       int[] xpoints = wand.xpoints;
       int[] ypoints = wand.ypoints;
       //if (checkDiameter()) {
-        addCell(xpoints, ypoints); // until we find a way to check the diameter we should keep this commented out
-      }
-    //}
+      addCell(xpoints, ypoints); // until we find a way to check the diameter we should keep this commented out
+      //}
+    }
     nextPoint();
   }
 
