@@ -121,7 +121,7 @@ public class Traverser {
   /**
    * Creates a new Traverser
    */
-  public Traverser(ImagePlus image,int minDiameter, int traverseDistance, Record record) {
+  public Traverser(ImagePlus image, ImageProcessor ip, int minDiameter, int traverseDistance, Record record) {
     if (DEBUG) IJ.log("Traverser being constructed...");
     this.image = image;
     this.minDiameter = minDiameter;
@@ -131,6 +131,7 @@ public class Traverser {
     this.y = traverseDistance;
     this.height = image.getHeight();
     this.width = image.getWidth();
+    this.ip = ip;
 
     //I don't know if we need this code, but I think we should leave it here for now...
     // this.stack = image.getStack();
