@@ -101,6 +101,7 @@ public class Traverser {
   int height; //The heght of image
   double TOLERANCE = 19.0;
   Record record;
+  ImageProcessor ip;
 
   //Do we need these things? Let's find out!
   // int width;
