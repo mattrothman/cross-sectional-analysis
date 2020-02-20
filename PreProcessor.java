@@ -1,4 +1,5 @@
 import ij.process.*;
+import ij.*;
 
 class Preprocessor {
     ImagePlus imp;

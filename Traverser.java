@@ -50,7 +50,7 @@ import ij.measure.*;
 
 // It would be a lot of work to figure out which imports are necessary for the doWand method and which are not.
 //    I propose we keep them all in and then delete the extraneous ones once we put it in imageJ and packages are actually recognized
-package ij;
+// package ij;
 import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
@@ -60,6 +60,7 @@ import ij.plugin.frame.Recorder;
 import ij.plugin.frame.ThresholdAdjuster;
 import ij.macro.Interpreter;
 import ij.macro.MacroRunner;
+import ij.Macro;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.measure.Measurements;
@@ -96,7 +97,7 @@ public class Traverser {
   int traverseDistance; //The distance between in pixels between calls of traverseOnce()
   int x, y; //The location (x,y coordinate) of the current pixel
   int minDiameter; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
-  ImagePlus image;
+  ImagePlus imp;
   int width; //The width of image
   int height; //The heght of image
   double TOLERANCE = 19.0;
@@ -124,7 +125,7 @@ public class Traverser {
    */
   public Traverser(ImagePlus image, ImageProcessor ip, int minDiameter, int traverseDistance, Record record) {
     if (DEBUG) IJ.log("Traverser being constructed...");
-    this.image = image;
+    this.imp = image;
     this.minDiameter = minDiameter;
     this.traverseDistance = traverseDistance;
     this.record = record;
@@ -236,32 +237,32 @@ public class Traverser {
 		boolean smooth = false;
     Wand w = new Wand(ip);
 
-    double t1 = ip.getMinThreshold();
-    if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
-      w.autoOutline(x, y, tolerance, imode);
-    } else
-      w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-		if (w.npoints>0) {
-			Roi previousRoi = imp.getRoi();
-			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
-			imp.deleteRoi();
-			imp.setRoi(roi);
-			if (previousRoi!=null)
-				roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
-			Roi roi2 = imp.getRoi();
-			if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
-				Rectangle bounds = roi2.getBounds();
-				if (bounds.width>1 && bounds.height>1) {
-					String smoothMacro = null;
-					if (smoothMacro==null)
-						smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
-					if (EventQueue.isDispatchThread())
-						new MacroRunner(smoothMacro); // run on separate thread
-					else
-						Macro.eval(smoothMacro);
-				}
-			}
-		}
+    // double t1 = ip.getMinThreshold();
+    // if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
+    //   w.autoOutline(x, y, tolerance, imode);
+    // } else
+    //   w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
+		// if (w.npoints>0) {
+		// 	Roi previousRoi = imp.getRoi();
+		// 	Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+		// 	imp.deleteRoi();
+		// 	imp.setRoi(roi);
+		// 	if (previousRoi!=null)
+		// 		roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
+		// 	Roi roi2 = imp.getRoi();
+		// 	if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
+		// 		Rectangle bounds = roi2.getBounds();
+		// 		if (bounds.width>1 && bounds.height>1) {
+		// 			String smoothMacro = null;
+		// 			if (smoothMacro==null)
+		// 				smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
+		// 			if (EventQueue.isDispatchThread())
+		// 				new MacroRunner(smoothMacro); // run on separate thread
+		// 			else 
+		// 				Macro.eval(smoothMacro);
+		// 		}
+		// 	}
+		// }
     return w;
   }
 }

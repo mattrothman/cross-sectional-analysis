@@ -63,7 +63,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		record.addCell(xcell3, ycell3);
 		record.addCell(xcell2, ycell2);
 		record.addCell(xcell1, ycell1);
-		Traverser traverse = new Traverser(imp, wand, 300, 4, record);
+		Traverser traverse = new Traverser(imp, ip, 300, 4, record);
 		traverse.traverse();
 		//boolean doesIt = record.cellExists(107, 39);
 		//IJ.showMessage(Boolean.toString(record.cellExists(107, 39)));
