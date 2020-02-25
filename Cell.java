@@ -98,17 +98,3 @@ class Cell {
    }
 
 }
-
-/**
-Variables:
- xCoordinates //array of x-coordinates that correspond with the outside parimeter of the cell
- yCoordinates //array of x-coordinates that correspond with the outside parimeter of the cell
- cellNumber //??? holds the number idenifier assocated with the cell? do you guys think this is a good idea??
-
-Methods:
-   inside --> parameters: x and y coordinates, returns: boolean //determines whether a given coordinate is inside the cell, modification of the 'inside' function in wand
-
-   roundness --> parameters: ?, returns: boolean?  //determines if the cell is suffincently round (maybe there should be some class variables that hold standards for roundess?)
-
-   calculateArea --> parameters: none?, returns: double //calculates area using the area function built into imageJ
-*/

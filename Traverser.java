@@ -1,35 +1,3 @@
-//Create Traverser class that traverses image, from left to right, searching for cells
-
-/**
-
-Variables:
-    clickDistance //holds the distance between clicks (pixels)
-    location //holds the current location (x,y coordinate) of where it is in the image
-    imageBoundary //holds the image boundary coordinates
-    minDiameter //holds the minimum diameter of a cell. In otherwards, how big of a diameter must be able to fit somewhere in the cell outline
-    image //holds the cell image
-
-Methods:
-
-    traverse //traverses to the next point in the image (calls isNextEdge, if the next right is past the edge, traverses down),
-                checks if the coordinate is already inside an existing cell, checks diameter, if the cell does
-                not already exist and the maximum diameter is acceptable then calls click which uses ImageJ's
-                wand, then calls addCell
-
-                wand source code: https://github.com/imagej/imagej1/blob/master/ij/gui/Wand.java
-
-    isRecorded //uses the Record class to check if a cell already exists in that coordinate. Calls the inside method of each recorded cell
-
-    checkDiameter //checks to see if the maximum diameter is acceptable using the minDiameter variable
-
-    addCell //creates a new Cell object and adds it to Record class
-
-    isNextEdge //determines whether the next right click will be off the edge of the image
-
-
-
-*/
-
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -40,17 +8,11 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.*;
-//To learn about analyzer, read:
-//https://imagej.nih.gov/ij/docs/menus/analyze.html
-//https://github.com/imagej/imagej1/blob/850870a50df7fe81f3cd47494a6ea46164bfcec8/ij/plugin/filter/Analyzer.java
 import ij.plugin.filter.Analyzer;
 import ij.gui.Wand;
 import ij.plugin.frame.PlugInFrame;
 import ij.measure.*;
 
-// It would be a lot of work to figure out which imports are necessary for the doWand method and which are not.
-//    I propose we keep them all in and then delete the extraneous ones once we put it in imageJ and packages are actually recognized
-// package ij;
 import ij.text.*;
 import ij.io.*;
 import ij.plugin.*;
@@ -64,10 +26,7 @@ import ij.Macro;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.measure.Measurements;
-import java.awt.event.*;
 import java.text.*;
-import java.util.*;
-import java.awt.*;
 import java.applet.Applet;
 import java.io.*;
 import java.lang.reflect.*;
@@ -104,13 +63,6 @@ public class Traverser {
   Record record;
   ImageProcessor ip;
 
-  //Do we need these things? Let's find out!
-  // int width;
-  // int height;
-  // Roi roi;
-  // ImageStack stack;
-  // ImageStatistics stats;
-
   //Stolen code and comment, but a debug mode is probably a very good idea ???
   // by declaring this static final, we allow javac to perform the test
   // at compile time rather than runtime, and remove debug code when
@@ -134,22 +86,6 @@ public class Traverser {
     this.height = image.getHeight();
     this.width = image.getWidth();
     this.ip = ip;
-
-    //I don't know if we need this code, but I think we should leave it here for now...
-    // this.stack = image.getStack();
-    // //Is this true for us?
-    // if (stack == null) {
-    //   IJ.error("This plugin only works on image stacks, not single frames.");
-    //   return;
-    // }
-    // this.roi = image.getRoi();
-    // if (roi == null) { // ensure there is always some ROI.
-    //     roi = new Roi(0, 0, image.getWidth(), image.getHeight(), image);
-    //     image.setRoi(roi);
-    // }
-    // int measurements = Analyzer.getMeasurements();
-    // Analyzer.setMeasurements(measurements);
-    // this.stats = image.getStatistics(measurements);
   }
 
   /**
@@ -237,32 +173,32 @@ public class Traverser {
 		boolean smooth = false;
     Wand w = new Wand(ip);
 
-    // double t1 = ip.getMinThreshold();
-    // if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
-    //   w.autoOutline(x, y, tolerance, imode);
-    // } else
-    //   w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-		// if (w.npoints>0) {
-		// 	Roi previousRoi = imp.getRoi();
-		// 	Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
-		// 	imp.deleteRoi();
-		// 	imp.setRoi(roi);
-		// 	if (previousRoi!=null)
-		// 		roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
-		// 	Roi roi2 = imp.getRoi();
-		// 	if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
-		// 		Rectangle bounds = roi2.getBounds();
-		// 		if (bounds.width>1 && bounds.height>1) {
-		// 			String smoothMacro = null;
-		// 			if (smoothMacro==null)
-		// 				smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
-		// 			if (EventQueue.isDispatchThread())
-		// 				new MacroRunner(smoothMacro); // run on separate thread
-		// 			else 
-		// 				Macro.eval(smoothMacro);
-		// 		}
-		// 	}
-		// }
+    double t1 = ip.getMinThreshold();
+    if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
+      w.autoOutline(x, y, tolerance, imode);
+    } else
+      w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
+		if (w.npoints>0) {
+			Roi previousRoi = imp.getRoi();
+			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+			imp.deleteRoi();
+			imp.setRoi(roi);
+			if (previousRoi!=null)
+				roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
+			Roi roi2 = imp.getRoi();
+			if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
+				Rectangle bounds = roi2.getBounds();
+				if (bounds.width>1 && bounds.height>1) {
+					String smoothMacro = null;
+					if (smoothMacro==null)
+						smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
+					// if (EventQueue.isDispatchThread())
+					// 	new MacroRunner(smoothMacro); // run on separate thread
+					// else 
+					// 	Macro.eval(smoothMacro);
+				}
+			}
+		}
     return w;
   }
 }
