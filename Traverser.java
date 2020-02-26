@@ -52,16 +52,18 @@ import ij.plugin.BatchProcessor;
 
 //Should it: extends PlugInFrame implements Measurements ??
 public class Traverser {
-  Wand wand;
-  int traverseDistance; //The distance between in pixels between calls of traverseOnce()
-  int x, y; //The location (x,y coordinate) of the current pixel
-  int minDiameter; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
-  ImagePlus imp;
-  int width; //The width of image
-  int height; //The heght of image
-  double TOLERANCE = 19.0;
-  Record record;
-  ImageProcessor ip;
+  private Wand wand;
+  private int traverseDistance; //The distance between in pixels between calls of traverseOnce()
+  private int x, y; //The location (x,y coordinate) of the current pixel
+  private int minDiameter; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
+  private ImagePlus imp;
+  private int width; //The width of image
+  private int height; //The heght of image
+  private double TOLERANCE = 19.0;
+  private Record record;
+  private ImageProcessor ip;
+  private ImageCanvas ic;
+	private Graphics g;
 
   //Stolen code and comment, but a debug mode is probably a very good idea ???
   // by declaring this static final, we allow javac to perform the test
@@ -86,6 +88,8 @@ public class Traverser {
     this.height = image.getHeight();
     this.width = image.getWidth();
     this.ip = ip;
+    this.ic = image.getCanvas();
+		this.g = ic.getGraphics();
   }
 
   /**
@@ -93,6 +97,7 @@ public class Traverser {
    */
   public void traverse () {
     while (this.y < this.height) {
+      IJ.log("(x,y)= " + Integer.toString(this.x) + "," + Integer.toString(this.y));
       traverseOnce();
     }
   }
@@ -103,8 +108,6 @@ public class Traverser {
    */
   public void traverseOnce () {
     if (!isRecorded()) {
-      //doWand(x, y, tolerance, mode)
-      //wand.autoOutline(this.x, this.y, 19.0, LEGACY_MODE);
       Wand wand = doWand(x, y, TOLERANCE);
       int[] xpoints = wand.xpoints;
       int[] ypoints = wand.ypoints;
@@ -166,6 +169,25 @@ public class Traverser {
     this.x = nextX;
   }
 
+  //Code source: https://introcs.cs.princeton.edu/java/35purple/Polygon.java.html
+	//Currently just returns a point vaguely near the centroid of the polygon, hopefully inside it
+	public Point getCentroid(Polygon p) {
+    Rectangle r = p.getBounds();
+		double cx = r.x + 0.5*this.width;
+		double cy = r.y + 0.5*this.height;
+		// int[] xpoints = p.xpoints;
+		// int[] ypoints = p.ypoints;
+		// double cx = 0, cy = 0;
+		// for (int i = 0; i < p.npoints; i++) {
+		// 	cx = cx + (xpoints[i] + xpoints[i+1]) * (ypoints[i] * xpoints[i+1] - xpoints[i] * ypoints[i+1]);
+		// 	cy = cy + (ypoints[i] + ypoints[i+1]) * (ypoints[i] * xpoints[i+1] - xpoints[i] * ypoints[i+1]);
+		// }
+		// cx /= (6 * calculateArea(p));
+		// cy /= (6 * calculateArea(p));
+		int x = (int) cx;
+		int y = (int) cy;
+		return new Point(x, y);
+	}
 
     /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
   public Wand doWand(int x, int y, double tolerance) {
@@ -178,26 +200,44 @@ public class Traverser {
       w.autoOutline(x, y, tolerance, imode);
     } else
       w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-		if (w.npoints>0) {
-			Roi previousRoi = imp.getRoi();
-			Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
-			imp.deleteRoi();
-			imp.setRoi(roi);
-			if (previousRoi!=null)
-				roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
-			Roi roi2 = imp.getRoi();
-			if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
-				Rectangle bounds = roi2.getBounds();
-				if (bounds.width>1 && bounds.height>1) {
-					String smoothMacro = null;
-					if (smoothMacro==null)
-						smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
-					// if (EventQueue.isDispatchThread())
-					// 	new MacroRunner(smoothMacro); // run on separate thread
-					// else 
-					// 	Macro.eval(smoothMacro);
+    // if (w.npoints>0) {
+		if (w.npoints>400) { //I raised the standard
+      Roi previousRoi = imp.getRoi();
+			double mag = ic.getMagnification();
+			g.setColor(Color.CYAN);
+			PolygonRoi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+			Polygon p = roi.getPolygon();
+			if (mag!=1.0){
+				for (int i=0; i<p.npoints; i++) {
+					p.xpoints[i] = (int) (mag * p.xpoints[i]);
+					p.ypoints[i] = (int) (mag * p.ypoints[i]);
 				}
 			}
+			g.drawPolygon(p);
+			Point point = getCentroid(p);
+			int cx = (int) (point.getX());
+			int cy = (int) (point.getY());
+			String size = Integer.toString(record.size());
+			g.drawString(size, cx, cy);
+			// Roi previousRoi = imp.getRoi();
+			// Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
+			// imp.deleteRoi();
+			// imp.setRoi(roi);
+			// if (previousRoi!=null)
+			// 	roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
+			// Roi roi2 = imp.getRoi();
+			// if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
+			// 	Rectangle bounds = roi2.getBounds();
+			// 	if (bounds.width>1 && bounds.height>1) {
+			// 		String smoothMacro = null;
+			// 		if (smoothMacro==null)
+			// 			smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
+			// 		// if (EventQueue.isDispatchThread())
+			// 		// 	new MacroRunner(smoothMacro); // run on separate thread
+			// 		// else
+			// 		// 	Macro.eval(smoothMacro);
+			// 	}
+			// }
 		}
     return w;
   }
