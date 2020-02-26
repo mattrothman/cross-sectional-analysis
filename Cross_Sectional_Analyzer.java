@@ -22,7 +22,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private int        size;            // Total number of pixels
-	//private Record record;
+	private Record record;
 
 	public static void main(String[] args) {
 		Cross_Sectional_Analyzer csa = new Cross_Sectional_Analyzer();
@@ -44,6 +44,28 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.height = ip.getHeight();
 		this.size = width*height;
 		this.wand = new Wand(ip);
+
+		//Beginning of Matt's test code
+		this.record = new Record();
+		Traverser traverser = new Traverser(imp, ip, 2, 5, record);
+		traverser.traverse();
+
+		Wand w1 = traverser.doWand(200, 200, 19.0);
+		Cell cell11 = new Cell(w1.xpoints, w1.ypoints);
+		double area1 = cell11.getArea();
+		IJ.showMessage("cell11 area: " + area1);
+
+		Wand w2 = traverser.doWand(300, 300, 19.0);
+		Cell cell22 = new Cell(w2.xpoints, w2.ypoints);
+		area1 = cell22.getArea();
+		IJ.showMessage("cell22 area: " + area1);
+
+		Wand w3 = traverser.doWand(800, 800, 19.0);
+		Cell cell33 = new Cell(w3.xpoints, w3.ypoints);
+		area1 = cell33.getArea();
+		IJ.showMessage("cell33 area: " + area1);
+		//End of Matt's test code
+
 		wand.autoOutline(106,38,19, Wand.LEGACY_MODE);
 		int point = IJ.doWand(100, 100);
 		Cell cell = new Cell(wand.xpoints, wand.ypoints);
