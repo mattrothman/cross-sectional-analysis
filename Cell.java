@@ -17,6 +17,8 @@ class Cell {
    //private int[] ypoints;
    private double area;
    private Polygon shape;
+   private int startx;
+   private int starty;
    //https://books.google.com/books?id=YEm5BQAAQBAJ&pg=PA735&lpg=PA735&dq=roundness+range+of+cells&source=bl&ots=EnoKFIoelk&sig=ACfU3U0FxVJIPjL3KEJtNMSTg0wchFnIWw&hl=en&ppis=_c&sa=X&ved=2ahUKEwiV1fDO8r3nAhUUoZ4KHY9DA_IQ6AEwDXoECAoQAQ#v=onepage&q=roundness%20range%20of%20cells&f=false
    //Acorrding to link, roundness or a normal cell is 0.43-0.97
    //and roundness of an abnormal cell is 0.06-0.87
@@ -24,12 +26,14 @@ class Cell {
    private static final double minRoundness  = 0.2; //This will change
    //declare a center coordinate
 
-   public Cell(int[] xpoints, int[] ypoints) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
+   public Cell(int[] xpoints, int[] ypoints, int startx, int starty) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
        //xpoints = newXpoints;
        //ypoints = newYpoints;
        Polygon cell = new Polygon(xpoints, ypoints, xpoints.length);
        shape = cell;
        area = calculateArea(shape);
+       startx = startx;
+       starty = starty;
    }
 
    public boolean contains(int xpoint, int ypoint) {
@@ -51,7 +55,15 @@ class Cell {
         return (Math.abs(carea/2.0));
     }
 
+    //DEBGUGGING METHOD
+    public int getstartx(){
+      return startx;
+    }
 
+    //DEBGUGGING METHOD
+    public int getstarty(){
+      return starty;
+    }
 
    //https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3544517/
    //Roundness is based on the above article

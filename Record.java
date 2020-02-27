@@ -13,8 +13,8 @@ class Record {
   }
 
   // We could make this return either the cell itself or the current record if we wanted to
-  public void addCell(int[] xpoints, int[] ypoints) {
-    Cell cellToAdd = new Cell(xpoints, ypoints);
+  public void addCell(int[] xpoints, int[] ypoints, int startx, int starty) {
+    Cell cellToAdd = new Cell(xpoints, ypoints, startx, starty);
     cells.add(cellToAdd);
   }
 

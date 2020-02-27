@@ -97,9 +97,10 @@ public class Traverser {
    */
   public void traverse () {
     while (this.y < this.height) {
-      IJ.log("(x,y)= " + Integer.toString(this.x) + "," + Integer.toString(this.y));
+      IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
       traverseOnce();
     }
+    //IJ.showMessage("Cells in record: " + record.size());
   }
 
   /**
@@ -112,7 +113,8 @@ public class Traverser {
       int[] xpoints = wand.xpoints;
       int[] ypoints = wand.ypoints;
       //if (checkDiameter()) {
-      addCell(xpoints, ypoints); // until we find a way to check the diameter we should keep this commented out
+      addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
+      IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
       //}
     }
     nextPoint();
@@ -153,8 +155,8 @@ public class Traverser {
    * @param   xpoints  The x coordinates of the points that outline the cell
    * @param   ypoints  The y coordinates of the points that outline the cell
    */
-  public void addCell ( int[] xpoints, int[] ypoints){
-    record.addCell(xpoints, ypoints);
+  public void addCell ( int[] xpoints, int[] ypoints, int startx, int starty){
+    record.addCell(xpoints, ypoints, startx, starty);
   }
 
   /**
