@@ -63,7 +63,7 @@ public class Traverser {
   private Record record;
   private ImageProcessor ip;
   private ImageCanvas ic;
-	private Graphics g;
+  private Graphics g;
 
   //Stolen code and comment, but a debug mode is probably a very good idea ???
   // by declaring this static final, we allow javac to perform the test
@@ -75,8 +75,8 @@ public class Traverser {
   public final static int LEGACY_MODE = 1;
 
   /**
-   * Creates a new Traverser
-   */
+  * Creates a new Traverser
+  */
   public Traverser(ImagePlus image, ImageProcessor ip, int minDiameter, int traverseDistance, Record record) {
     if (DEBUG) IJ.log("Traverser being constructed...");
     this.imp = image;
@@ -89,58 +89,95 @@ public class Traverser {
     this.width = image.getWidth();
     this.ip = ip;
     this.ic = image.getCanvas();
-		this.g = ic.getGraphics();
+    this.g = ic.getGraphics();
+    g.setColor(Color.CYAN);
   }
 
   /**
-   * Traverses the image, adding new cells to the record class when appropriate.
-   */
+  * Traverses the image, adding new cells to the record class when appropriate.
+  */
   public void traverse () {
+    //for(int i = 0; i <10; i++){
     while (this.y < this.height) {
       IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
       traverseOnce();
     }
-    //IJ.showMessage("Cells in record: " + record.size());
+    // IJ.showMessage("Cells in record: " + record.size());
+    // drawLabel("(100,100)"  , 100, 100);
+		// String cellNum = Integer.toString(record.whichCell(100, 100));
+		// IJ.showMessage("Is there a cell at (100, 100): #" + cellNum);
+    // drawLabel("(200,100)"  , 200, 100);
+		// cellNum = Integer.toString(record.whichCell(200, 100));
+		// IJ.showMessage("Is there a cell at (200, 100): #" + cellNum);
+    // drawLabel("(300,100)"  , 300, 100);
+		// cellNum = Integer.toString(record.whichCell(300, 100));
+		// IJ.showMessage("Is there a cell at (300, 100): #" + cellNum);
+    // drawLabel("(400,100)"  , 400, 100);
+		// cellNum = Integer.toString(record.whichCell(400, 100));
+		// IJ.showMessage("Is there a cell at (400,100): #" + cellNum);
+    // drawLabel("(500,100)"  , 500, 100);
+		// cellNum = Integer.toString(record.whichCell(500, 100));
+		// IJ.showMessage("Is there a cell at (500,100): #" + cellNum);
+    // drawLabel("(600,100)"  , 600, 100);
+		// cellNum = Integer.toString(record.whichCell(600, 100));
+		// IJ.showMessage("Is there a cell at (600,100): #" + cellNum);
+    // drawLabel("(700,100)"  , 700, 100);
+		// cellNum = Integer.toString(record.whichCell(700, 100));
+		// IJ.showMessage("Is there a cell at (700,100): #" + cellNum);
+    // drawLabel("(800,100)"  , 800, 100);
+		// cellNum = Integer.toString(record.whichCell(800, 100));
+		// IJ.showMessage("Is there a cell at (800,100): #" + cellNum);
   }
 
   /**
-   * Traverses to the next point in the image.
-   * If the point is inside a new, valid cell, a new cell is created and added to the record class.
-   */
+  * Traverses to the next point in the image.
+  * If the point is inside a new, valid cell, a new cell is created and added to the record class.
+  */
   public void traverseOnce () {
-    if (!isRecorded()) {
+    int recorded = isRecorded();
+    IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+    if (recorded == -1) {
       Wand wand = doWand(x, y, TOLERANCE);
-      int[] xpoints = wand.xpoints;
-      int[] ypoints = wand.ypoints;
-      //if (checkDiameter()) {
-      addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
-      IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
+      // int[] xpoints = wand.xpoints;
+      // int[] ypoints = wand.ypoints;
+      // //if (checkDiameter()) {
+      // addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
+      // IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
       //}
+    }
+    else{
+      IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
     }
     nextPoint();
   }
 
   /**
-   * Checks whether the next point is already inside of a recorded cell.
-   * @return Whether or not the next point is already inside of a recorded cell
-   * OR
-   * @return Either the number of cell that the next point is inside,
-   * or -1 if the next point is not already inside of a recorded cell.
-   */
-  public boolean isRecorded () { //OR public int isRecorded(){
-    if (record.cellExists(this.x, this.y)) {
-      return true;
-    }
-    return false;
+  * Checks whether the next point is already inside of a recorded cell.
+  * @return Whether or not the next point is already inside of a recorded cell
+  * OR
+  * @return Either the number of cell that the next point is inside,
+  * or -1 if the next point is not already inside of a recorded cell.
+  */
+  public int isRecorded () { //OR public int isRecorded(){
+    return record.whichCell(this.x, this.y);
+  }
+
+  /**
+  * Checks whether the polygon shares >= 20% of its points with any cell in record.
+  * @return whether the polygon shares >= 20% of its points with any cell in record.
+  */
+  public int isRedundant (int[] xpoints, int[] ypoints, int npoints) {
+    Polygon p = new Polygon(xpoints, ypoints, npoints);
+    return record.cellOutlineOverlaps(p);
   }
 
   //ABOUT checkDiameter:
   //should any cell with an insufficient diameteer stil be added to record so that this process is not repeated?
   //We could mark these cells so that at the end of the process, they are deleted
   /**
-   * Checks whether a new cell is large enough to be considered a cell.
-   * @return whether a new cell is large enough to be considered a cell
-   */
+  * Checks whether a new cell is large enough to be considered a cell.
+  * @return whether a new cell is large enough to be considered a cell
+  */
   public boolean checkDiameter () {
     //TODO: Calculate the maximum diameter of the cell
     int maxDiameter = 0;
@@ -151,17 +188,17 @@ public class Traverser {
   }
 
   /**
-   * Creates a new Cell object and adds it to Record class
-   * @param   xpoints  The x coordinates of the points that outline the cell
-   * @param   ypoints  The y coordinates of the points that outline the cell
-   */
+  * Creates a new Cell object and adds it to Record class
+  * @param   xpoints  The x coordinates of the points that outline the cell
+  * @param   ypoints  The y coordinates of the points that outline the cell
+  */
   public void addCell ( int[] xpoints, int[] ypoints, int startx, int starty){
     record.addCell(xpoints, ypoints, startx, starty);
   }
 
   /**
-   * Calculates the nextPoint to be traversed to, and updates location or x and y
-   */
+  * Calculates the nextPoint to be traversed to, and updates location or x and y
+  */
   public void nextPoint () {
     int nextX = this.x + this.traverseDistance;
     if (nextX > this.width) {
@@ -172,75 +209,102 @@ public class Traverser {
   }
 
   //Code source: https://introcs.cs.princeton.edu/java/35purple/Polygon.java.html
-	//Currently just returns a point vaguely near the centroid of the polygon, hopefully inside it
-	public Point getCentroid(Polygon p) {
+  //Currently just returns a point vaguely near the centroid of the polygon, hopefully inside it
+  public Point getCentroid(Polygon p) {
     Rectangle r = p.getBounds();
-		double cx = r.x + 0.5*this.width;
-		double cy = r.y + 0.5*this.height;
-		// int[] xpoints = p.xpoints;
-		// int[] ypoints = p.ypoints;
-		// double cx = 0, cy = 0;
-		// for (int i = 0; i < p.npoints; i++) {
-		// 	cx = cx + (xpoints[i] + xpoints[i+1]) * (ypoints[i] * xpoints[i+1] - xpoints[i] * ypoints[i+1]);
-		// 	cy = cy + (ypoints[i] + ypoints[i+1]) * (ypoints[i] * xpoints[i+1] - xpoints[i] * ypoints[i+1]);
-		// }
-		// cx /= (6 * calculateArea(p));
-		// cy /= (6 * calculateArea(p));
-		int x = (int) cx;
-		int y = (int) cy;
-		return new Point(x, y);
-	}
+    double cx = r.x + 0.5*this.width;
+    double cy = r.y + 0.5*this.height;
+    // int[] xpoints = p.xpoints;
+    // int[] ypoints = p.ypoints;
+    // double cx = 0, cy = 0;
+    // for (int i = 0; i < p.npoints; i++) {
+    // 	cx = cx + (xpoints[i] + xpoints[i+1]) * (ypoints[i] * xpoints[i+1] - xpoints[i] * ypoints[i+1]);
+    // 	cy = cy + (ypoints[i] + ypoints[i+1]) * (ypoints[i] * xpoints[i+1] - xpoints[i] * ypoints[i+1]);
+    // }
+    // cx /= (6 * calculateArea(p));
+    // cy /= (6 * calculateArea(p));
+    int x = (int) cx;
+    int y = (int) cy;
+    return new Point(x, y);
+  }
 
-    /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
+  public void drawCell(Cell c){
+    Polygon p = c.getShape();
+    double mag = ic.getMagnification();
+
+    String size = Integer.toString(c.getcellNum());
+    int mx = (int) (mag * c.getstartx());
+    int my = (int) (mag * c.getstarty());
+    g.drawString(size, mx, my);
+
+    //Adjust polygon outline to image magnification
+    int end = p.npoints;
+    if (mag!=1.0){
+      for (int i=0; i < p.npoints; i++) {
+        p.xpoints[i] = (int) (mag * p.xpoints[i]);
+        p.ypoints[i] = (int) (mag * p.ypoints[i]);
+        if ((p.xpoints[i] == 0) && (p.ypoints[i] == 0)){
+          end = i;
+          break;
+        }
+      }
+    }
+
+    int[] xp = Arrays.copyOfRange(p.xpoints, 0, end);
+    int[] yp = Arrays.copyOfRange(p.ypoints, 0, end);
+    int np = xp.length;
+    int n = np - 1;
+    g.drawPolygon(xp, yp, np);
+
+    // //Let's figure out what's going on with that line
+    // g.setColor(Color.MAGENTA);
+    // // g.drawLine(p.xpoints[0], p.ypoints[0], 0, 0);
+
+    //IJ.log("x[0], y[0] = " + xp[0] + "," + yp[0] + "  x[1], y[1] = " + xp[1] + "," + yp[1] + "\nx[n], y[n] = " + xp[n] + "," + Integer.toString(yp[n]) );
+    //IJ.log("xpoints: " + Arrays.toString(xp));
+    //IJ.log("\n\nypoints: " + Arrays.toString(yp));
+    // g.setColor(Color.CYAN);
+
+  }
+
+  public void drawLabel(String st, int x, int y){
+    double mag = ic.getMagnification();
+    int mx = (int) (mag * x);
+    int my = (int) (mag * y);
+    g.drawString(st, mx, my);
+  }
+
+  /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
   public Wand doWand(int x, int y, double tolerance) {
     int imode = Wand.LEGACY_MODE;
-		boolean smooth = false;
+    boolean smooth = false;
     Wand w = new Wand(ip);
 
     double t1 = ip.getMinThreshold();
     if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
       w.autoOutline(x, y, tolerance, imode);
-    } else
-      w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-    // if (w.npoints>0) {
-		if (w.npoints>400) { //I raised the standard
-      Roi previousRoi = imp.getRoi();
-			double mag = ic.getMagnification();
-			g.setColor(Color.CYAN);
-			PolygonRoi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
-			Polygon p = roi.getPolygon();
-			if (mag!=1.0){
-				for (int i=0; i<p.npoints; i++) {
-					p.xpoints[i] = (int) (mag * p.xpoints[i]);
-					p.ypoints[i] = (int) (mag * p.ypoints[i]);
-				}
-			}
-			g.drawPolygon(p);
-			Point point = getCentroid(p);
-			int cx = (int) (point.getX());
-			int cy = (int) (point.getY());
-			String size = Integer.toString(record.size());
-			g.drawString(size, cx, cy);
-			// Roi previousRoi = imp.getRoi();
-			// Roi roi = new PolygonRoi(w.xpoints, w.ypoints, w.npoints, Roi.TRACED_ROI);
-			// imp.deleteRoi();
-			// imp.setRoi(roi);
-			// if (previousRoi!=null)
-			// 	roi.update(false, false);  // add/subtract ROI to previous one if shift/alt key down
-			// Roi roi2 = imp.getRoi();
-			// if (smooth && roi2!=null && roi2.getType()==Roi.TRACED_ROI) {
-			// 	Rectangle bounds = roi2.getBounds();
-			// 	if (bounds.width>1 && bounds.height>1) {
-			// 		String smoothMacro = null;
-			// 		if (smoothMacro==null)
-			// 			smoothMacro = BatchProcessor.openMacroFromJar("SmoothWandTool.txt");
-			// 		// if (EventQueue.isDispatchThread())
-			// 		// 	new MacroRunner(smoothMacro); // run on separate thread
-			// 		// else
-			// 		// 	Macro.eval(smoothMacro);
-			// 	}
-			// }
-		}
+    }
+    else w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
+
+    //If there is no cell here, but the outline we find is too small, ignore it
+    if (w.npoints>200) { //I raised the standard from 0 to 400
+      int[] xpoints = w.xpoints;
+      int[] ypoints = w.ypoints;
+      int redundant = isRedundant(xpoints, ypoints, xpoints.length);
+      if(redundant != -1){
+        IJ.log("Outline based on " + this.x + "," + this.y + " overlapped with cell " + redundant);
+        return w;
+      }
+      IJ.log("Cells in record " + record.size());
+      addCell(xpoints, ypoints, x, y);
+
+      Cell c = record.getLastCell();
+      IJ.log("\nAdded cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+
+      drawCell(c);
+
+      IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+    }
     return w;
   }
 }

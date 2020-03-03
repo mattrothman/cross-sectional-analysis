@@ -18,7 +18,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private ImageProcessor ip;
 	private Wand wand;
 	private static final int minDiameter = 50;
-	private static final int traverseDistance = 50;
+	private static final int traverseDistance = 100;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private int        size;            // Total number of pixels
@@ -49,6 +49,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 		traverser.traverse();
+
 
 		// Wand w1 = traverser.doWand(200, 200, 19.0);
 		// Cell cell11 = new Cell(w1.xpoints, w1.ypoints);
