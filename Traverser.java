@@ -135,19 +135,20 @@ public class Traverser {
   */
   public void traverseOnce () {
     int recorded = isRecorded();
-    IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    if (recorded == -1) {
-      Wand wand = doWand(x, y, TOLERANCE);
-      // int[] xpoints = wand.xpoints;
-      // int[] ypoints = wand.ypoints;
-      // //if (checkDiameter()) {
-      // addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
-      // IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
-      //}
-    }
-    else{
-      IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    }
+    // IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+    Wand wand = doWand(x, y, TOLERANCE);
+    // if (recorded == -1) {
+    //   Wand wand = doWand(x, y, TOLERANCE);
+    //   // int[] xpoints = wand.xpoints;
+    //   // int[] ypoints = wand.ypoints;
+    //   // //if (checkDiameter()) {
+    //   // addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
+    //   // IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
+    //   //}
+    // }
+    // else{
+    //   IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+    // }
     nextPoint();
   }
 
@@ -274,8 +275,21 @@ public class Traverser {
     g.drawString(st, mx, my);
   }
 
+  //Returns true if the height of the bounding rectangle of the cell is less than 1/3 the image Height
+  //And if the width of the bounding rectangle of the cell is less than 1/3 the image width
+  public Boolean cellBoundsSmallEnough(Cell c){
+    Rectangle bounds = c.getShape().getBounds();
+    int h = (int) bounds.getHeight();
+    int w = (int) bounds.getWidth();
+    if((h > this.height/3) && (w > this.width/3)){
+      return false;
+    }
+    return true;
+  }
+
   /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
   public Wand doWand(int x, int y, double tolerance) {
+    IJ.log("\nPossible new cell..");
     int imode = Wand.LEGACY_MODE;
     boolean smooth = false;
     Wand w = new Wand(ip);
@@ -285,25 +299,37 @@ public class Traverser {
       w.autoOutline(x, y, tolerance, imode);
     }
     else w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-
     //If there is no cell here, but the outline we find is too small, ignore it
     if (w.npoints>200) { //I raised the standard from 0 to 400
       int[] xpoints = w.xpoints;
       int[] ypoints = w.ypoints;
       int redundant = isRedundant(xpoints, ypoints, xpoints.length);
       if(redundant != -1){
-        IJ.log("Outline based on " + this.x + "," + this.y + " overlapped with cell " + redundant);
+        IJ.log("Outline based on " + this.x + "," + this.y + " overlapped with cell " + redundant + "\n");
         return w;
       }
-      IJ.log("Cells in record " + record.size());
-      addCell(xpoints, ypoints, x, y);
 
+      addCell(xpoints, ypoints, x, y);
       Cell c = record.getLastCell();
-      IJ.log("\nAdded cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+
+      if(!c.roundness()){
+        IJ.log("Outline based on " + this.x + "," + this.y + " had insufficient roundness\n");
+        record.removeLastCell();
+        return w;
+      }
+      if(!cellBoundsSmallEnough(c)){
+        record.removeLastCell();
+        IJ.log("Cell had bounds that were too large.");
+      }
+      IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+      IJ.log("Roundness: " + c.calcRoundness());
 
       drawCell(c);
 
       IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+    }
+    else{
+      IJ.log("Outline based on " + this.x + "," + this.y + " had too few points defining its outline\n");
     }
     return w;
   }

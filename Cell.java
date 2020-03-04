@@ -142,6 +142,7 @@ class Cell {
 
   public Polygon getShape() { return shape; }
 
+
   public String toString(){
     String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.xpoints);
     return toString;

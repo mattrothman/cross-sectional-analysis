@@ -89,4 +89,12 @@ class Record {
   public int size() {
     return cells.size();
   }
+
+  public void removeCell(int index) {
+    cells.remove(index);
+  }
+
+  public void removeLastCell() {
+    cells.remove(cells.size()-1); 
+  }
 }
