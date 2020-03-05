@@ -239,23 +239,23 @@ public class Traverser {
     g.drawString(size, mx, my);
 
     //Adjust polygon outline to image magnification
-    int end = p.npoints;
+    // int end = p.npoints;
     if (mag!=1.0){
       for (int i=0; i < p.npoints; i++) {
         p.xpoints[i] = (int) (mag * p.xpoints[i]);
         p.ypoints[i] = (int) (mag * p.ypoints[i]);
-        if ((p.xpoints[i] == 0) && (p.ypoints[i] == 0)){
-          end = i;
-          break;
-        }
+        // if ((p.xpoints[i] == 0) && (p.ypoints[i] == 0)){
+        //   end = i;
+        //   break;
+        // }
       }
     }
 
-    int[] xp = Arrays.copyOfRange(p.xpoints, 0, end);
-    int[] yp = Arrays.copyOfRange(p.ypoints, 0, end);
-    int np = xp.length;
-    int n = np - 1;
-    g.drawPolygon(xp, yp, np);
+    // int[] xp = Arrays.copyOfRange(p.xpoints, 0, end);
+    // int[] yp = Arrays.copyOfRange(p.ypoints, 0, end);
+    // int np = xp.length;
+    // int n = np - 1;
+    g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
 
     // //Let's figure out what's going on with that line
     // g.setColor(Color.MAGENTA);

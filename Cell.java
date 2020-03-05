@@ -28,9 +28,16 @@ class Cell {
   //declare a center coordinate
 
   public Cell(int[] xpoints, int[] ypoints, int startx, int starty, int cellNum) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
-    //xpoints = newXpoints;
-    //ypoints = newYpoints;
-    Polygon cell = new Polygon(xpoints, ypoints, xpoints.length);
+    int end = xpoints.length;
+    for (int i = xpoints.length -1; i > 0; i--) {
+      if ((xpoints[i] != 0) || (ypoints[i] != 0)){
+        end = i + 1;
+        break;
+      }
+    }
+    int[] xp = Arrays.copyOfRange(xpoints, 0, end);
+    int[] yp = Arrays.copyOfRange(ypoints, 0, end);
+    Polygon cell = new Polygon(xp, yp, xp.length);
     this.shape = cell;
     this.area = calculateArea(shape);
     this.startx = startx;
@@ -164,7 +171,7 @@ class Cell {
 
 
   public String toString(){
-    String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.xpoints);
+    String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.ypoints);
     return toString;
 
   }
