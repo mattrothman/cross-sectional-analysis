@@ -97,8 +97,8 @@ public class Traverser {
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse () {
-    //for(int i = 0; i <10; i++){
-    while (this.y < this.height) {
+    for(int i = 0; i <20; i++){
+    //while (this.y < this.height) {
       IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
       traverseOnce();
     }
@@ -136,19 +136,19 @@ public class Traverser {
   public void traverseOnce () {
     int recorded = isRecorded();
     // IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    Wand wand = doWand(x, y, TOLERANCE);
-    // if (recorded == -1) {
-    //   Wand wand = doWand(x, y, TOLERANCE);
-    //   // int[] xpoints = wand.xpoints;
-    //   // int[] ypoints = wand.ypoints;
-    //   // //if (checkDiameter()) {
-    //   // addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
-    //   // IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
-    //   //}
-    // }
-    // else{
-    //   IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    // }
+    //Wand wand = doWand(x, y, TOLERANCE);
+    if (recorded == -1) {
+      Wand wand = doWand(x, y, TOLERANCE);
+      // int[] xpoints = wand.xpoints;
+      // int[] ypoints = wand.ypoints;
+      // //if (checkDiameter()) {
+      // addCell(xpoints, ypoints, x, y); // until we find a way to check the diameter we should keep this commented out
+      // IJ.log("Cell #" + record.size() + " based on point= " + x + "," + y);
+      //}
+    }
+    else{
+      IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+    }
     nextPoint();
   }
 
@@ -304,25 +304,39 @@ public class Traverser {
       int[] xpoints = w.xpoints;
       int[] ypoints = w.ypoints;
       int redundant = isRedundant(xpoints, ypoints, xpoints.length);
-      if(redundant != -1){
-        IJ.log("Outline based on " + this.x + "," + this.y + " overlapped with cell " + redundant + "\n");
-        return w;
-      }
+
+      // Everything is
+      // if(redundant != -1){
+      //   IJ.log("Outline based on " + this.x + "," + this.y + " overlapped with cell " + redundant + "\n");
+      //   return w;
+      // }
 
       addCell(xpoints, ypoints, x, y);
       Cell c = record.getLastCell();
 
-      if(!c.roundness()){
-        IJ.log("Outline based on " + this.x + "," + this.y + " had insufficient roundness\n");
-        record.removeLastCell();
-        return w;
-      }
+      // if(!c.roundness()){
+      //   IJ.log("Outline based on " + this.x + "," + this.y + " had insufficient roundness\n");
+      //   record.removeLastCell();
+      //   return w;
+      // }
       if(!cellBoundsSmallEnough(c)){
         record.removeLastCell();
         IJ.log("Cell had bounds that were too large.");
       }
+      int eq = record.equals();
+      // if(eq != -1){
+      //   IJ.log("Cell based on " + this.x + "," + this.y + " was equal to cell #" + eq +"\n");
+      //   record.removeLastCell();
+      //   return w;
+      // }
       IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
       IJ.log("Roundness: " + c.calcRoundness());
+      IJ.log("Area: " + c.getArea());
+      if(redundant != -1) IJ.log("Outline overlapped with cell" + redundant);
+      if(eq != -1) IJ.log("Cell was equal to cell #" + eq);
+      IJ.log("" + c.toString());
+      IJ.log("\n");
+
 
       drawCell(c);
 

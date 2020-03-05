@@ -142,6 +142,26 @@ class Cell {
 
   public Polygon getShape() { return shape; }
 
+  // @Override
+	// @SuppressWarnings("unchecked")
+  public Boolean equals(Cell c){
+    Polygon p = c.getShape();
+    int[] xp = p.xpoints;
+    int[] yp = p.ypoints;
+    int overlap = 0;
+    for (int i = 0; i < p.npoints; i++){
+      if (contains(xp[i], yp[i])) overlap++;
+      if (overlap > 5) return true;
+    }
+    for (int i = 0; i < shape.npoints; i++){
+      if (c.contains(shape.xpoints[i], shape.ypoints[i])) overlap++;
+      if (overlap > 5) return true;
+    }
+    if(area == c.getArea()) return true;
+    if((area - c.getArea() <= 2) || (-area + c.getArea() <= 2)) return true;
+    else return false;
+  }
+
 
   public String toString(){
     String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.xpoints);

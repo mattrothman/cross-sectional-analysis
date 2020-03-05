@@ -50,9 +50,9 @@ class Record {
   }
 
   /**
-  * Checks to see if there is already an existing cell in record that contains the given point.
+  * Returns the cell that shares 20% of its outline with p, or else -1.
   * @param p
-  * @return Whether there exists a cell in record that contains the given point
+  * @return Returns the cell that shares 20% of its outline with p, or else -1.
   */
   public int cellOutlineOverlaps(Polygon p) {
     for (int i = 0; i < cells.size(); i++) {
@@ -64,6 +64,23 @@ class Record {
     return -1;
   }
 
+  /**
+  * Checks to see if the last cell .equals() any other cell in the record..
+  * @return Returns the index of the cell that .equals() the last cell, or else returns -1.
+  */
+  public int equals(){
+    Cell c = getLastCell();
+    for (int i= 0; i < cells.size()-1; i++){
+      if (cells.get(i).equals(c)) return (i + 1);
+    }
+    return -1;
+  }
+
+  /**
+  * Returns which cell in record contains the given point.
+  * @param p
+  * @return Returns the cell in record that contains the given point, or else returns -1.
+  */
   public int whichCell(int x, int y) {
     for (int i = 0; i < cells.size(); i++) {
       Cell currCell = cells.get(i);
@@ -90,11 +107,17 @@ class Record {
     return cells.size();
   }
 
+  /**
+  * Removes the cell at index in cells.
+  */
   public void removeCell(int index) {
     cells.remove(index);
   }
 
+  /**
+  * Removes the last cell from cells.
+  */
   public void removeLastCell() {
-    cells.remove(cells.size()-1); 
+    cells.remove(cells.size()-1);
   }
 }
