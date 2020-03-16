@@ -14,10 +14,16 @@ class Record {
   }
 
   // We could make this return either the cell itself or the current record if we wanted to
-  public void addCell(int[] xpoints, int[] ypoints, int startx, int starty) {
+  /**public void addCell(int[] xpoints, int[] ypoints, int startx, int starty) {
     int cellNum = cells.size() + 1;
     Cell cellToAdd = new Cell(xpoints, ypoints, startx, starty, cellNum);
     cells.add(cellToAdd);
+  } */
+
+  public void addCell(Cell cell) {
+      int cellNum = cells.size() + 1;
+      cell.updateCellNum(cellNum);
+      cells.add(cell);
   }
 
   public void printData(String fileLocation) throws FileNotFoundException {

@@ -5,6 +5,7 @@ import ij.gui.*;
 import java.awt.*;
 import ij.gui.Wand;
 import ij.WindowManager;
+import java.util.Arrays;
 
 
 /**
@@ -49,6 +50,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 		traverser.traverse();
+		IJ.log("Record length: " + Integer.toString(record.cells.size()));
+		//IJ.log(Arrays.toString(record.cells.get(2).getShape().xpoints));
+        //IJ.log(Arrays.toString(record.cells.get(2).getShape().ypoints));
+        //IJ.log("Is cell 2 an edge cell?: " + Boolean.toString(traverser.isEdgeCell(record.cells.get(1))));
 
 
 		// Wand w1 = traverser.doWand(200, 200, 19.0);

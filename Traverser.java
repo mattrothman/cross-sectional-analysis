@@ -97,9 +97,10 @@ public class Traverser {
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse () {
-    for(int i = 0; i <20; i++){
-    //while (this.y < this.height) {
+    //for(int i = 0; i <20; i++){
+    while (this.y < this.height) {
       IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
+      IJ.log("CHANGES");
       traverseOnce();
     }
     // IJ.showMessage("Cells in record: " + record.size());
@@ -193,8 +194,8 @@ public class Traverser {
   * @param   xpoints  The x coordinates of the points that outline the cell
   * @param   ypoints  The y coordinates of the points that outline the cell
   */
-  public void addCell ( int[] xpoints, int[] ypoints, int startx, int starty){
-    record.addCell(xpoints, ypoints, startx, starty);
+  public void addCell (Cell c){
+    record.addCell(c);
   }
 
   /**
@@ -287,22 +288,81 @@ public class Traverser {
     return true;
   }
 
+  public boolean recordContains(int x, int y) {
+      for (int i = 0; i < record.cells.size(); i++ ) {
+          if (inside(x, y, record.cells.get(i).getShape())) {
+              return true;
+          }
+      }
+      return false;
+  }
+
+    /**
+     * This method should check to see if a given point is inside a given polygon. In order to do this, it will look for x points
+     * and y points that belong to the polygon. For each set of x points, it will evaluate the corresponding y points. and
+     * for each y points it will evaluate the corresponding x point. For the set of  x points that belong to the polygon's y,
+     * for example, it will see how many y points are greater than the given point's y point and how many points are lower.
+     * do the same with the set of y's that correspond with the points that are shared with the given point's x. If all
+     * sets of points that are above and below are odd, the point is inside the polygon, other wise the point is outside.
+     * @param x
+     * @param y
+     * @param polygon
+     * @return
+     */
+  public boolean inside(int x, int y, Polygon polygon){
+      //Polygon polygon = c.getShape();
+      boolean matchY = false;
+      boolean matchX = false;
+      for (int i = 0; i < polygon.npoints; i++ ) {
+          if (polygon.xpoints[i] == x) {
+              matchX = true;
+          }
+          if (polygon.ypoints[i] == x) {
+              matchY = true;
+          }
+      }
+      if (matchY && matchX) {
+          return true;
+      }
+      else { return false;}
+  }
+
+  public boolean isEdgeCell(Cell c){
+      int[] xpoints = c.getShape().xpoints;
+      int[] ypoints = c.getShape().ypoints;
+      for(int i = 0; i < xpoints.length; i++){
+          if (xpoints[i] == 0 || ypoints[i] == 0 || xpoints[i] == width || ypoints[i] == height) {
+              IJ.log("EDGE CELL");
+              IJ.log("FINSISHED");
+              return true;
+          }
+      }
+      IJ.log("FINSISHED");
+      return false;
+  }
+
   /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
   public Wand doWand(int x, int y, double tolerance) {
     IJ.log("\nPossible new cell..");
     int imode = Wand.LEGACY_MODE;
     boolean smooth = false;
     Wand w = new Wand(ip);
-
     double t1 = ip.getMinThreshold();
     if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
       w.autoOutline(x, y, tolerance, imode);
     }
     else w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
     //If there is no cell here, but the outline we find is too small, ignore it
-    if (w.npoints>200) { //I raised the standard from 0 to 400
-      int[] xpoints = w.xpoints;
-      int[] ypoints = w.ypoints;
+
+    int[] xpoints = w.xpoints;
+    int[] ypoints = w.ypoints;
+    Polygon polygon = new Polygon(xpoints, ypoints, xpoints.length);
+    Cell c = new Cell(xpoints, ypoints, x, y, 0);
+    //addCell(c);
+     if (w.npoints>200 && !isEdgeCell(c) && cellBoundsSmallEnough(c)) { //I raised the standard from 0 to 400
+         isEdgeCell(c);
+      //int[] xpoints = w.xpoints;
+      //int[] ypoints = w.ypoints;
       int redundant = isRedundant(xpoints, ypoints, xpoints.length);
 
       // Everything is
@@ -310,41 +370,77 @@ public class Traverser {
       //   IJ.log("Outline based on " + this.x + "," + this.y + " overlapped with cell " + redundant + "\n");
       //   return w;
       // }
-
-      addCell(xpoints, ypoints, x, y);
-      Cell c = record.getLastCell();
-
+      addCell(c);
+      //Cell c = record.getLastCell();
+      //Polygon polygon = new Polygon(xpoints, ypoints, xpoints.length);
       // if(!c.roundness()){
       //   IJ.log("Outline based on " + this.x + "," + this.y + " had insufficient roundness\n");
       //   record.removeLastCell();
       //   return w;
       // }
-      if(!cellBoundsSmallEnough(c)){
-        record.removeLastCell();
-        IJ.log("Cell had bounds that were too large.");
-      }
-      int eq = record.equals();
-      // if(eq != -1){
-      //   IJ.log("Cell based on " + this.x + "," + this.y + " was equal to cell #" + eq +"\n");
-      //   record.removeLastCell();
-      //   return w;
-      // }
-      IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
-      IJ.log("Roundness: " + c.calcRoundness());
-      IJ.log("Area: " + c.getArea());
-      if(redundant != -1) IJ.log("Outline overlapped with cell" + redundant);
-      if(eq != -1) IJ.log("Cell was equal to cell #" + eq);
-      IJ.log("" + c.toString());
-      IJ.log("\n");
+        /**
+        if(!cellBoundsSmallEnough(c) ){
+            record.removeLastCell();
+            IJ.log("Cell had bounds that were too large.");
+        } **/
+        int eq = record.equals();
+        // if(eq != -1){
+        //   IJ.log("Cell based on " + this.x + "," + this.y + " was equal to cell #" + eq +"\n");
+        //   record.removeLastCell();
+        //   return w;
+        // }
+        IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+        IJ.log("Roundness: " + c.calcRoundness());
+        IJ.log("Area: " + c.getArea());
+        if(redundant != -1) IJ.log("Outline overlapped with cell" + redundant);
+        if(eq != -1) IJ.log("Cell was equal to cell #" + eq);
+        IJ.log("" + c.toString());
+        IJ.log("\n");
+
+        /**if (!isEdgeCell(c)){
+            drawCell(c);
+        } **/
+        drawCell(c);
+
+        IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+    //}
+        /**
+        if (isEdgeCell(polygon)) {
+            IJ.log("EDGE CELL WAS NOT ADDED");
+
+        }
+        else {
+            //addCell(xpoints, ypoints, x, y);
+            //Cell c = record.getLastCell();
+            if (!cellBoundsSmallEnough(c)){ // || isEdgeCell(c)) {
+                record.removeLastCell();
+                IJ.log("Cell had bounds that were too large.");
+            }
+            int eq = record.equals();
+            // if(eq != -1){
+            //   IJ.log("Cell based on " + this.x + "," + this.y + " was equal to cell #" + eq +"\n");
+            //   record.removeLastCell();
+            //   return w;
+            // }
+            IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+            IJ.log("Roundness: " + c.calcRoundness());
+            IJ.log("Area: " + c.getArea());
+            if (redundant != -1) IJ.log("Outline overlapped with cell" + redundant);
+            if (eq != -1) IJ.log("Cell was equal to cell #" + eq);
+            IJ.log("" + c.toString());
+            IJ.log("\n");
 
 
-      drawCell(c);
+            drawCell(c);
 
-      IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
-    }
+            IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+        }
+         **/
+        }
     else{
       IJ.log("Outline based on " + this.x + "," + this.y + " had too few points defining its outline\n");
     }
+
     return w;
   }
 }

@@ -50,6 +50,9 @@ class Cell {
 
   }
 
+  public void updateCellNum(int cellNum) {
+      this.cellNum = cellNum;
+  }
   /**
   * Returns true if either:
   *   (1) p's outline has points that make up >= 20% of shape's outline
