@@ -7,6 +7,9 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.lang.Math;
 import java.util.Arrays;
+import ij.*;
+import java.util.ArrayList;
+
 
 /**
 Cell class holds a representation of a cell by storing a list of x and y coordinates of its parimeter
@@ -74,28 +77,6 @@ class Cell {
 
 
 
-  public boolean printInside(int x, int y) {
-    //Polygon polygon = c.getShape();
-    ArrayList<Integer> xSet = new ArrayList<Integer>();
-    for (int i = 0; i < shape.npoints; i++) {
-      if (shape.xpoints[i] == x) {
-        xSet.add(shape.ypoints[i]);
-      }
-    }
-    int aboveY = 0;
-    for (int i = 0; i < xSet.size(); i++) {
-      if (xSet.get(i) > y) {
-        aboveY++;
-      }
-    }
-    IJ.log(xSet.toString());
-    if (aboveY/2 % 2 == 0) {  //if (aboveY % 2 == 0) {
-      return false;
-    }
-    else {
-      return true;
-    }
-  }
 
   public void logPoints(){
 
@@ -110,9 +91,23 @@ class Cell {
       IJ.log(Integer.toString(ypoint));
     }
 
+  }
 
+  public Polygon reducePoints(int reduction) {
+    int reducedLength = shape.npoints/reduction + 1;
+    int[] reducedX = new int[reducedLength];
+    int[] reducedY = new int[reducedLength];
+
+    for (int i = 0; i < shape.npoints; i += reduction) {
+      reducedX[i/reduction] = shape.xpoints[i];
+      reducedY[i/reduction] = shape.ypoints[i];
+
+    }
+    Polygon reduced = new Polygon(reducedX, reducedY, reducedLength);
+    return reduced;
 
   }
+
 
 
   public void updateCellNum(int cellNum) {

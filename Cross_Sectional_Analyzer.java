@@ -51,6 +51,9 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 		traverser.traverse();
 		IJ.log("Record length: " + Integer.toString(record.cells.size()));
+		Polygon reduced = record.cells.get(0).reducePoints(5);
+		Cell newCell = new Cell(reduced.xpoints, reduced.ypoints, reduced.xpoints[0], reduced.ypoints[0], 100);
+		newCell.logPoints();
 		//IJ.log(Arrays.toString(record.cells.get(2).getShape().xpoints));
         //IJ.log(Arrays.toString(record.cells.get(2).getShape().ypoints));
         //IJ.log("Is cell 2 an edge cell?: " + Boolean.toString(traverser.isEdgeCell(record.cells.get(1))));
