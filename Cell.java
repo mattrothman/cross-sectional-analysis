@@ -74,6 +74,47 @@ class Cell {
 
 
 
+  public boolean printInside(int x, int y) {
+    //Polygon polygon = c.getShape();
+    ArrayList<Integer> xSet = new ArrayList<Integer>();
+    for (int i = 0; i < shape.npoints; i++) {
+      if (shape.xpoints[i] == x) {
+        xSet.add(shape.ypoints[i]);
+      }
+    }
+    int aboveY = 0;
+    for (int i = 0; i < xSet.size(); i++) {
+      if (xSet.get(i) > y) {
+        aboveY++;
+      }
+    }
+    IJ.log(xSet.toString());
+    if (aboveY/2 % 2 == 0) {  //if (aboveY % 2 == 0) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+
+  public void logPoints(){
+
+    IJ.log("\tX Points: ");
+    for (int xpoint : shape.xpoints)
+    {
+      IJ.log(Integer.toString(xpoint));
+    }
+    IJ.log("\tY Points: ");
+    for (int ypoint : shape.ypoints)
+    {
+      IJ.log(Integer.toString(ypoint));
+    }
+
+
+
+  }
+
+
   public void updateCellNum(int cellNum) {
       this.cellNum = cellNum;
   }
