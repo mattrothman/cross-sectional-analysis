@@ -3,6 +3,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.awt.Polygon;
+import java.util.Arrays;
+import ij.*;
 
 class Record {
 
@@ -25,50 +27,29 @@ class Record {
       cell.updateCellNum(cellNum);
       cells.add(cell);
   }
-
-  public void printData(String fileLocation) throws FileNotFoundException {
-    File data = new File(fileLocation);
-    PrintWriter pw = new PrintWriter(data);
-
-    // This is probably not the way we will want the text file to look. Some sort of table would be best.
-    for (int i = 0; i < cells.size(); i++) {
-      Cell currCell = cells.get(i);
-      pw.println(i + ": " +currCell.getArea());
-    }
-
-    pw.close();
-  }
-
-  /**
-  * Checks to see if there is already an existing cell in record that contains the given point.
-  * @param x
-  * @param y
-  * @return Whether there exists a cell in record that contains the given point
-  */
-  public boolean cellExists(int x, int y) {
-    for (int i = 0; i < cells.size(); i++) {
-      Cell currCell = cells.get(i);
-      if (currCell.contains(x,y)) {
-        return true;
-      }
+/**
+  public boolean cellsSharePoints(Cell c1, Cell c2) {
+    if (Arrays.equals(c1.getShape().xpoints, c2.getShape().xpoints) &&  Arrays.equals(c1.getShape().ypoints, c2.getShape().ypoints)) {
+      return true;
     }
     return false;
   }
-
-  /**
-  * Returns the cell that shares 20% of its outline with p, or else -1.
-  * @param p
-  * @return Returns the cell that shares 20% of its outline with p, or else -1.
-  */
-  public int cellOutlineOverlaps(Polygon p) {
-    for (int i = 0; i < cells.size(); i++) {
-      Cell currCell = cells.get(i);
-      if(currCell.sameCell(p)){
-        return (currCell.getcellNum());
+ **/
+  public boolean arraySharesPoints(Cell c) {
+    for(Cell cell : cells) {
+      if (Arrays.equals(c.getShape().xpoints, cell.getShape().xpoints)) { // && Arrays.equals(c.getShape().ypoints, cell.getShape().ypoints)) {
+//          IJ.log("\tArrays are equal");
+         return true;
       }
+//      IJ.log(Arrays.toString(c.getShape().xpoints));
+//      IJ.log(Arrays.toString(cell.getShape().xpoints));
+//      IJ.log("\t Arrays are not equal");
     }
-    return -1;
+    return false;
+
   }
+
+
 
   /**
   * Checks to see if the last cell .equals() any other cell in the record..
