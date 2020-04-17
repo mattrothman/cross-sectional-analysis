@@ -48,6 +48,9 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
+		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
+		imp.updateAndDraw();
+
 		//if (!showDialog()) return;
 		this.width = ip.getWidth();
 		this.height = ip.getHeight();
