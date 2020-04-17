@@ -315,7 +315,7 @@ public class Traverser {
 
       drawCell(c);
 
-      IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+      //IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
       IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
       IJ.log("" + c.toString());
       IJ.log("Roundness: " + c.calcRoundness());
