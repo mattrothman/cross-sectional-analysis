@@ -44,8 +44,7 @@ class Cell {
     Polygon cell = new Polygon(xp, yp, xp.length);
     this.shape = cell;
     this.area = calculateArea(shape);
-    this.startx = startx;
-    this.starty = starty;
+    centerPoints();
     this.cellNum = cellNum;
   }
 
@@ -54,6 +53,20 @@ class Cell {
 
   }
 
+
+  /**
+   * Centers the point made with startx and starty so the cell number is in a good spot.
+   */
+  public void centerPoints() {
+    int countx = 0;
+    int county = 0;
+    for (int i = 0; i < shape.npoints; i++) {
+      countx += shape.xpoints[i];
+      county += shape.ypoints[i];
+    }
+    startx = countx/shape.npoints;
+    starty = county/shape.npoints;
+  }
 
 
 
