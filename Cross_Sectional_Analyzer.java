@@ -78,7 +78,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 			//wait.waitForUser(userTitle, userText);
 		}
-
+        record.createTable();
 		//Display Readout and Allow Cell Deletion
 	}
 }

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.awt.Polygon;
 import java.util.Arrays;
 import ij.*;
+import ij.measure.ResultsTable;
+
 
 class Record {
 
@@ -16,30 +18,34 @@ class Record {
   }
 
   // We could make this return either the cell itself or the current record if we wanted to
-  /**public void addCell(int[] xpoints, int[] ypoints, int startx, int starty) {
-    int cellNum = cells.size() + 1;
-    Cell cellToAdd = new Cell(xpoints, ypoints, startx, starty, cellNum);
-    cells.add(cellToAdd);
-  } */
+
+  /**
+   * public void addCell(int[] xpoints, int[] ypoints, int startx, int starty) {
+   * int cellNum = cells.size() + 1;
+   * Cell cellToAdd = new Cell(xpoints, ypoints, startx, starty, cellNum);
+   * cells.add(cellToAdd);
+   * }
+   */
 
   public void addCell(Cell cell) {
-      int cellNum = cells.size() + 1;
-      cell.updateCellNum(cellNum);
-      cells.add(cell);
+    int cellNum = cells.size() + 1;
+    cell.updateCellNum(cellNum);
+    cells.add(cell);
   }
-/**
-  public boolean cellsSharePoints(Cell c1, Cell c2) {
-    if (Arrays.equals(c1.getShape().xpoints, c2.getShape().xpoints) &&  Arrays.equals(c1.getShape().ypoints, c2.getShape().ypoints)) {
-      return true;
-    }
-    return false;
-  }
- **/
+
+  /**
+   * public boolean cellsSharePoints(Cell c1, Cell c2) {
+   * if (Arrays.equals(c1.getShape().xpoints, c2.getShape().xpoints) &&  Arrays.equals(c1.getShape().ypoints, c2.getShape().ypoints)) {
+   * return true;
+   * }
+   * return false;
+   * }
+   **/
   public boolean arraySharesPoints(Cell c) {
-    for(Cell cell : cells) {
+    for (Cell cell : cells) {
       if (Arrays.equals(c.getShape().xpoints, cell.getShape().xpoints)) { // && Arrays.equals(c.getShape().ypoints, cell.getShape().ypoints)) {
 //          IJ.log("\tArrays are equal");
-         return true;
+        return true;
       }
 //      IJ.log(Arrays.toString(c.getShape().xpoints));
 //      IJ.log(Arrays.toString(cell.getShape().xpoints));
@@ -50,28 +56,29 @@ class Record {
   }
 
 
-
   /**
-  * Checks to see if the last cell .equals() any other cell in the record..
-  * @return Returns the index of the cell that .equals() the last cell, or else returns -1.
-  */
-  public int equals(){
+   * Checks to see if the last cell .equals() any other cell in the record..
+   *
+   * @return Returns the index of the cell that .equals() the last cell, or else returns -1.
+   */
+  public int equals() {
     Cell c = getLastCell();
-    for (int i= 0; i < cells.size()-1; i++){
+    for (int i = 0; i < cells.size() - 1; i++) {
       if (cells.get(i).equals(c)) return (i + 1);
     }
     return -1;
   }
 
   /**
-  * Returns which cell in record contains the given point.
-  * @param p
-  * @return Returns the cell in record that contains the given point, or else returns -1.
-  */
+   * Returns which cell in record contains the given point.
+   *
+   * @param p
+   * @return Returns the cell in record that contains the given point, or else returns -1.
+   */
   public int whichCell(int x, int y) {
     for (int i = 0; i < cells.size(); i++) {
       Cell currCell = cells.get(i);
-      if (currCell.contains(x,y)) {
+      if (currCell.contains(x, y)) {
         return (currCell.getcellNum());
       }
     }
@@ -79,32 +86,64 @@ class Record {
   }
 
   /**
-  * Returns the last cell.
-  * @return cell  The last cell added.
-  */
+   * Returns the last cell.
+   *
+   * @return cell  The last cell added.
+   */
   public Cell getLastCell() {
-    return cells.get(cells.size()-1);
+    return cells.get(cells.size() - 1);
   }
 
   /**
-  * Returns the size() of cells.
-  * @return size  The size() of cells.
-  */
+   * Returns the size() of cells.
+   *
+   * @return size  The size() of cells.
+   */
   public int size() {
     return cells.size();
   }
 
   /**
-  * Removes the cell at index in cells.
-  */
+   * Removes the cell at index in cells.
+   */
   public void removeCell(int index) {
     cells.remove(index);
   }
 
   /**
-  * Removes the last cell from cells.
-  */
+   * Removes the last cell from cells.
+   */
   public void removeLastCell() {
-    cells.remove(cells.size()-1);
+    cells.remove(cells.size() - 1);
   }
+
+
+  public void createTable() {
+    //new ResultsTable
+    ///** Adds a value to the end of the given column. If the column
+    //		does not exist, it is created.
+    //		There is an example at:<br>
+    //		http://imagej.nih.gov/ij/plugins/sine-cosine.html
+    //	*/
+    //	public void addValue(String column, double value)
+
+    ///** Constructs a ResultsTable with 'nRows' rows. */
+    //	public ResultsTable(Integer nRows) {
+    //		init();
+    //		for (int i=0; i<nRows; i++)
+    //			incrementCounter();
+    //	}
+
+    //rt.show(“Results”);
+
+    ResultsTable table = new ResultsTable();
+    for (Cell cell : cells) {
+      table.incrementCounter();
+      table.addValue("Cell #", cell.cellNum);
+      table.addValue("Area", cell.getArea());
+    }
+    String title = "Results";
+    table.show(title);
+  }
+
 }
