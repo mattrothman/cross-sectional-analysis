@@ -155,6 +155,7 @@ class Record {
       table.incrementCounter();
       table.addValue("Cell #", cell.cellNum);
       table.addValue("Area", cell.getArea());
+      table.addValue("Number of Points", cell.getShape().npoints);
     }
     String title = "Results";
     table.show(title);

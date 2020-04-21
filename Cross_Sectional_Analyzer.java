@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.awt.Dialog;
 import ij.gui.WaitForUserDialog;
 import ij.gui.GenericDialog;
+import java.util.ArrayList;
 
 /**
  * ImageJ plugin to measure the areas of skeletal muscle fibers.
@@ -30,8 +31,8 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	//Variables for Dialog
 	private String userTitle = "User Edit Mode";
 	private String userText = "Use the Brush Tool to clarify cell borders that the program is not recognizing. \nIgnore non-cell regions that have been outlined and numbered; you will be able to remove these items from the image and readout at another point in this program. \nClick OK when you are done editing, and the program will re-run.";
-	private String deletePrompt = "To clarify cell borders that the program is not recognizing, press \"OK\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"CANCEL\".";
-	final GenericDialog gd = new GenericDialog("");
+	private String deletePrompt = "";
+	private GenericDialog gd = new GenericDialog("");
 
 	public static void main(String[] args) {
 		Cross_Sectional_Analyzer csa = new Cross_Sectional_Analyzer();
@@ -47,6 +48,37 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		//return 0;
 	}
 
+	public boolean showDeletionDialog(){
+		GenericDialog gd = new GenericDialog("Delete Cells");
+		int size = record.size();
+		String[] labels = new String[size];
+		boolean[] states = new boolean[size];
+		int c = 1;
+		for(int i = 0; i < size; i++){
+			labels[i] = "Cell " + c;
+			c++;
+		}
+		gd.addCheckboxGroup(size/3, 3, labels, states);
+		gd.showDialog();
+		ArrayList<Integer> cellsToBeDeleted = new ArrayList<Integer>();
+		// for(int i = 1; i <= size + 1; i++){
+		// 	if (gd.getNextBoolean()){
+		// 		cellsToBeDeleted.add(i);
+		// 	}
+		// }
+		for(int i = 1; i <= size; i++){
+			if (states[i-1]){
+				cellsToBeDeleted.add(i);
+			}
+		}
+		int index = 0;
+		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
+			index = cellsToBeDeleted.get(i).intValue();
+			record.removeCell(index);
+		}
+		return true;
+  }
+
 	public void run(ImageProcessor ip) {
 		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
 		imp.updateAndDraw();
@@ -59,16 +91,19 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
+		//Consider using NonBlockingGenericDialog instead
 		WaitForUserDialog wait = new WaitForUserDialog(userTitle, userText);
-		gd.addMessage(deletePrompt);
 
 		//Enter Traverse and Edit Loop
 		while(true){
 			traverser.traverse();
-			IJ.log("Record length: " + Integer.toString(record.cells.size()));
+			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"OK\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"CANCEL\".";
+			gd.addMessage(deletePrompt);
+			//IJ.log("Record length: " + Integer.toString(record.cells.size()));
 			//Polygon reduced = record.cells.get(0).reducePoints(8);
-			IJ.log("UPDATED");
-			IJ.log("Initial length: " + Integer.toString(record.cells.get(0).getShape().npoints));
+			//IJ.log("UPDATED");
+			//IJ.log("Initial length: " + Integer.toString(record.cells.get(0).getShape().npoints));
+
 			//Create button that breaks loop
 			gd.showDialog();
 			if (gd.wasCanceled()) break;
@@ -76,9 +111,14 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			wait.show();
 			this.record = new Record();
 			traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
+			wait = new WaitForUserDialog(userTitle, userText);
+			this.gd = new GenericDialog("");
 			//wait.waitForUser(userTitle, userText);
 		}
-        record.createTable();
+		showDeletionDialog();
+		traverser.drawAllCells();
 		//Display Readout and Allow Cell Deletion
+		record.createTable();
+		IJ.showMessage("Finished!");
 	}
 }

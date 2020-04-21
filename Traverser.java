@@ -90,13 +90,50 @@ public class Traverser {
   }
 
   /**
+  * Traverses the image three times, and sets record equal to the record with the most cells.
+  */
+  public void getBestTraversal () {
+    traverse ();
+    Record record1 = this.record;
+    this.x = traverseDistance;
+    this.y = traverseDistance;
+    int size1 = record1.size();
+    IJ.showMessage("Finished Traversal 1: " + size1 + " cells");
+    Record emptyRecord1 = new Record();
+    traverse ();
+    Record record2 = this.record;
+    this.x = traverseDistance;
+    this.y = traverseDistance;
+    int size2 = record2.size();
+    IJ.showMessage("Finished Traversal 2: " + size2 + " cells");
+    Record emptyRecord2 = new Record();
+    traverse ();
+    Record record3 = this.record;
+    this.x = traverseDistance;
+    this.y = traverseDistance;
+    int size3 = record3.size();
+    IJ.showMessage("Finished Traversal 3: " + size3 + " cells");
+    Record bigRecord;
+    if (size3 >= size2 && size3 >= size1){
+      bigRecord = record3;
+    }
+    else if (size2 >= size3 && size2 >= size1){
+      bigRecord = record2;
+    }
+    else{
+      bigRecord = record1;
+    }
+    this.record = bigRecord;
+    drawAllCells();
+  }
+
+  /**
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse () {
-    //for(int i = 0; i <20; i++){
     while (this.y < this.height) {
-      IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
-      IJ.log("CHANGES");
+      // IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
+      // IJ.log("CHANGES");
       traverseOnce();
     }
   }
@@ -107,12 +144,12 @@ public class Traverser {
   */
   public void traverseOnce () {
     int recorded = isRecorded();
-    // IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+    if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
     if (recorded == -1) {
       Wand wand = doWand(x, y, TOLERANCE);
     }
     else{
-      IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+      if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
     }
     nextPoint();
   }
@@ -198,25 +235,25 @@ public class Traverser {
       int[] ypoints = c.getShape().ypoints;
       for(int i = 0; i < xpoints.length; i++){
           if (xpoints[i] == 0 || ypoints[i] == 0 || xpoints[i] == width || ypoints[i] == height) {
-              IJ.log("EDGE CELL");
-              IJ.log("FINSISHED");
+              if (DEBUG) IJ.log("EDGE CELL");
+              if (DEBUG) IJ.log("FINSISHED");
               return true;
           }
       }
-      IJ.log("FINSISHED");
+      if (DEBUG) IJ.log("FINSISHED");
       return false;
   }
 //delete
   public void print4(Cell c) {
     for (int i = 0; i < 4; i++) {
-      IJ.log(Integer.toString(c.getShape().xpoints[i]));
+      if (DEBUG) IJ.log(Integer.toString(c.getShape().xpoints[i]));
     }
   }
 
   /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
   public Wand doWand(int x, int y, double tolerance) {
 
-    IJ.log("\nPossible new cell..");
+    if (DEBUG) IJ.log("\nPossible new cell..");
     int imode = Wand.LEGACY_MODE;
     boolean smooth = false;
     Wand w = new Wand(ip);
@@ -234,7 +271,7 @@ public class Traverser {
     Cell c = new Cell(xpoints, ypoints, x, y, 0);
 
 
-    if (w.npoints>200 && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) { //I raised the standard from 0 to 400
+    if (w.npoints>100 && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) { 
 
       addCell(c);
 
@@ -242,15 +279,17 @@ public class Traverser {
 
       drawCell(c);
 
-      //IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
-      IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
-      IJ.log("" + c.toString());
-      IJ.log("Roundness: " + c.calcRoundness());
-      IJ.log("Area: " + c.getArea());
-      IJ.log("\n");
+      if (DEBUG) {
+        IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+        IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+        IJ.log("" + c.toString());
+        IJ.log("Roundness: " + c.calcRoundness());
+        IJ.log("Area: " + c.getArea());
+        IJ.log("\n");
+      }
      }
     else{
-      IJ.log("Outline based on " + this.x + "," + this.y + " had too few points defining its outline\n");
+      if (DEBUG) IJ.log("Outline based on " + this.x + "," + this.y + " had too few points defining its outline\n");
     }
 
     return w;
