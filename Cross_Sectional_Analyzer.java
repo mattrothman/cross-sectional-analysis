@@ -22,7 +22,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private ImageProcessor ip;
 	private Wand wand;
 	private static final int minDiameter = 50;
-	private static final int traverseDistance = 100;
+	private static final int traverseDistance = 10;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private int        size;            // Total number of pixels

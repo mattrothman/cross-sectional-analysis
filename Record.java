@@ -117,6 +117,20 @@ class Record {
     cells.remove(cells.size() - 1);
   }
 
+  /**
+   * Checks to see if we're about to draw overlapping cell nums (hopefully will catch repeat cells missed by arraySharesPoints)
+   */
+  public Boolean sameCenterPoints(Cell cell) {
+    int startx = cell.getstartx();
+    int starty = cell.getstarty();
+    for (int i = 0; i < cells.size(); i++) {
+      Cell currCell = cells.get(i);
+      if (currCell.getstartx()==startx && currCell.getstarty()==starty) {
+        return (true);
+      }
+    }
+    return false;
+  }
 
   public void createTable() {
     //new ResultsTable
