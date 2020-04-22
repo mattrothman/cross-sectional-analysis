@@ -22,11 +22,13 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	//private ImageStack sstack;          // Stack result
 	private ImageProcessor ip;
 	private Wand wand;
-	private static final int minDiameter = 50;
-	private static final int traverseDistance = 10;
+	private int minDiameter = 50;
+	private int traverseDistance = 10;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private int        size;            // Total number of pixels
+    private int        maginification;
+
 	private Record record;
 	//Variables for Dialog
 	private String userTitle = "User Edit Mode";
@@ -79,6 +81,25 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		return true;
   }
 
+    public void initialOptions() {
+        GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
+        //(("label", default number)
+        //magnification, traverse distance, minimum cell area
+        gd.addNumericField("magnification", 400.0, 0);
+        gd.addNumericField("traverse distance", 50.0, 0);
+        gd.addNumericField("minimum cell perimeter", 250.0, 0);
+        gd.showDialog();
+        maginification = (int)gd.getNextNumber();
+        traverseDistance = (int)gd.getNextNumber();
+        minDiameter = (int)gd.getNextNumber();
+//        IJ.log("Initial Options: ");
+//        IJ.log(Integer.toString(mag));
+//        IJ.log(Integer.toString(traverse));
+//        IJ.log(Integer.toString(perimeter));
+
+
+    }
+
 	public void run(ImageProcessor ip) {
 		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
 		imp.updateAndDraw();
@@ -88,7 +109,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.height = ip.getHeight();
 		this.size = width*height;
 		this.wand = new Wand(ip);
-
+        initialOptions();
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead

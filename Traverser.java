@@ -271,7 +271,7 @@ public class Traverser {
     Cell c = new Cell(xpoints, ypoints, x, y, 0);
 
 
-    if (w.npoints>100 && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) { 
+    if (w.npoints>minDiameter && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) {
 
       addCell(c);
 
