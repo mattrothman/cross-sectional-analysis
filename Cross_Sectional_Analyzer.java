@@ -81,17 +81,32 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		return true;
   }
 
+  //no negitive values
+    //eventually change the n-points to area
     public void initialOptions() {
         GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
         //(("label", default number)
         //magnification, traverse distance, minimum cell area
         gd.addNumericField("magnification", 400.0, 0);
-        gd.addNumericField("traverse distance", 50.0, 0);
+        gd.addNumericField("traverse distance", 10.0, 0);
         gd.addNumericField("minimum cell perimeter", 250.0, 0);
         gd.showDialog();
         maginification = (int)gd.getNextNumber();
         traverseDistance = (int)gd.getNextNumber();
         minDiameter = (int)gd.getNextNumber();
+        if (maginification < 0) {
+            IJ.showMessage("Magnification cannot be negative. Magnification will be reset to the default value of 400X");
+            maginification = 400;
+        }
+        if (traverseDistance < 1) {
+            IJ.showMessage("Traverse distance cannot be less than 1. Traverse distance will be reset to the default value of 10");
+            traverseDistance = 10;
+        }
+        if (minDiameter < 0) {
+            IJ.showMessage("Minimum Cell Diameter cannot be negative. Magnification will be reset to the default value of 250");
+            maginification = 400;
+        }
+              
 //        IJ.log("Initial Options: ");
 //        IJ.log(Integer.toString(mag));
 //        IJ.log(Integer.toString(traverse));
