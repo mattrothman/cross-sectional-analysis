@@ -162,5 +162,8 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.record.createTable();
 		IJ.showMessage("Finished!");
 		traverser.drawAllCells();
+
+		CellOverlay co = new CellOverlay(this.record, this.height, this.width);
+		co.create();
 	}
 }

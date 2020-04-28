@@ -149,7 +149,6 @@ class Record {
     //			incrementCounter();
     //	}
 
-    //rt.show(“Results”);
     ResultsTable table = new ResultsTable();
     for (Cell cell : cells) {
       table.incrementCounter();
