@@ -108,6 +108,7 @@ class Record {
    */
   public void removeCell(int index) {
     cells.remove(index);
+    IJ.log("Cell " + index + " is gone. Now record has " + size() + " cells.");
   }
 
   /**
@@ -149,7 +150,6 @@ class Record {
     //	}
 
     //rt.show(“Results”);
-
     ResultsTable table = new ResultsTable();
     for (Cell cell : cells) {
       table.incrementCounter();
@@ -161,4 +161,11 @@ class Record {
     table.show(title);
   }
 
+  public void renumberCells() {
+    int num = 1;
+    for (Cell cell : cells) {
+      cell.updateCellNum(num);
+      num++;
+    }
+  }
 }

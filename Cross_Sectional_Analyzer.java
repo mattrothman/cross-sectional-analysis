@@ -11,6 +11,7 @@ import java.awt.Dialog;
 import ij.gui.WaitForUserDialog;
 import ij.gui.GenericDialog;
 import java.util.ArrayList;
+import ij.measure.ResultsTable;
 
 /**
  * ImageJ plugin to measure the areas of skeletal muscle fibers.
@@ -48,7 +49,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		//return 0;
 	}
 
-	public boolean showDeletionDialog(){
+	public ArrayList<Integer> showDeletionDialog(){
 		GenericDialog gd = new GenericDialog("Delete Cells");
 		int size = record.size();
 		String[] labels = new String[size];
@@ -56,9 +57,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		int c = 1;
 		for(int i = 0; i < size; i++){
 			labels[i] = "Cell " + c;
+			states[i] = false;
 			c++;
 		}
-		gd.addCheckboxGroup(size/3, 3, labels, states);
+		gd.addCheckboxGroup((size/3 + 1), 3, labels, states);
 		gd.showDialog();
 		ArrayList<Integer> cellsToBeDeleted = new ArrayList<Integer>();
 		// for(int i = 1; i <= size + 1; i++){
@@ -66,17 +68,14 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		// 		cellsToBeDeleted.add(i);
 		// 	}
 		// }
-		for(int i = 1; i <= size; i++){
-			if (states[i-1]){
+		for(int i = 0; i < size; i++){
+			if (gd.getNextBoolean()){
 				cellsToBeDeleted.add(i);
+				IJ.log("cellsToBeDeleted.add(" + i + ")");
 			}
 		}
-		int index = 0;
-		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
-			index = cellsToBeDeleted.get(i).intValue();
-			record.removeCell(index);
-		}
-		return true;
+		IJ.log("cellsToBeDeleted.size() = " + cellsToBeDeleted.size());
+		return cellsToBeDeleted;
   }
 
 	public void run(ImageProcessor ip) {
@@ -115,10 +114,17 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			this.gd = new GenericDialog("");
 			//wait.waitForUser(userTitle, userText);
 		}
-		showDeletionDialog();
+		ArrayList<Integer> cellsToBeDeleted = showDeletionDialog();
+		int index = 0;
+		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
+			index = cellsToBeDeleted.get(i).intValue();
+			this.record.removeCell(index);
+		}
 		traverser.drawAllCells();
 		//Display Readout and Allow Cell Deletion
-		record.createTable();
+		this.record.renumberCells();
+		this.record.createTable();
 		IJ.showMessage("Finished!");
+		traverser.drawAllCells();
 	}
 }
