@@ -114,6 +114,18 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 
     }
 
+    public void overLayPrompt() {
+		String[] choices = new String[]{"red", "blue", "green"};
+		GenericDialog gd = new GenericDialog("Save Overlay");
+		gd.addMessage("Would you like to save an overlay of the cells?");
+		gd.addChoice("Color", choices, "red");
+		gd.showDialog();
+		if (gd.wasCanceled()) return;
+		String color = gd.getNextChoice();
+		CellOverlay co = new CellOverlay(this.record, this.height, this.width, color);
+		co.createAndSave();
+	}
+
 	public void run(ImageProcessor ip) {
 		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
 		imp.updateAndDraw();
@@ -163,7 +175,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		IJ.showMessage("Finished!");
 		traverser.drawAllCells();
 
-		CellOverlay co = new CellOverlay(this.record, this.height, this.width);
-		co.create();
+		overLayPrompt();
+
 	}
 }
