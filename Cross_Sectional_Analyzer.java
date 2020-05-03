@@ -51,7 +51,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		return DOES_ALL;
 	}
 
-	public void showDeletionDialog1(){
+	public boolean showDeletionDialog1(){
 		GenericDialog gd = new GenericDialog("Delete Cells");
 		gd.setResizable(true);
 		gd.addMessage("Check the box next to a cell to delete it:");
@@ -64,11 +64,16 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			states[i] = false;
 			c++;
 		}
-		gd.addCheckboxGroup((size/6 + 1), 6, labels, states);
-		gd.addMessage("Press OK to delete the selected cells. \nPress CANCEL to view results for the current " + record.size() + " cells." );
-		gd.showDialog();
 
-		for(int i = 0; i < size; i++){
+		gd.addCheckboxGroup((size/6 + 1), 6, labels, states);
+		gd.addMessage("Press DELETE CELLS to delete the selected cells. \nPress CONTINUE to view results for the current " + record.size() + " cells." );
+        gd.enableYesNoCancel("Delete Cells", "Continue");
+        gd.hideCancelButton();
+        gd.showDialog();
+
+        if (!gd.wasOKed()) return false;
+
+        for(int i = 0; i < size; i++){
 			if (gd.getNextBoolean()){
 				cellsToBeDeleted.add(record.cells.get(i));
 				deletedCells.add(record.cells.get(i));
@@ -76,6 +81,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			}
 		}
 		if (DEBUG) IJ.log("deletedCells.size() = " + deletedCells.size());
+		return true;
   }
 
 	public void deleteCells() {
@@ -129,10 +135,12 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			c++;
 		}
 		gd.addCheckboxGroup((size2/6 + 1), 6, labels2, states2);
-		gd.addMessage("Press OK to delete and/or re-add the selected cells. \nPress CANCEL to view results for the current " + record.size() + " cells." );
-		gd.showDialog();
+		gd.addMessage("Press DELETE CELLS to delete and/or re-add the selected cells. \nPress CONTINUE to view results for the current " + record.size() + " cells." );
+        gd.enableYesNoCancel("Delete Cells", "Continue");
+        gd.hideCancelButton();
+        gd.showDialog();
 
-		if (gd.wasCanceled()) return false;
+        if (!gd.wasOKed()) return false;
 
 		for(int i = 0; i < size1; i++){
 			if (gd.getNextBoolean()){
@@ -176,14 +184,16 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		}
   }
 
-  public void overLayPrompt() {
+	/**
+	 * Asks the user if they would like to save the final cell selection as an overlay for later use
+	 */
+	private void overLayPrompt() {
 		String[] choices = new String[]{"red", "blue", "green"};
 		GenericDialog gd = new GenericDialog("Save Overlay");
 		gd.addMessage("Would you like to save an overlay of the cells?");
-		gd.addChoice("Color", choices, "red");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
-		String color = gd.getNextChoice();
+		Color color = new ColorChooser("Choose a color for overlay", new Color(0x03fcf4), false).getColor();
 		CellOverlay co = new CellOverlay(this.record, this.height, this.width, color);
 		co.createAndSave();
 	}
@@ -216,7 +226,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		Calibration cal = imp.getCalibration();
 		pixelSize = cal.pixelWidth;
 		String unit = cal.getUnit();
-    initialOptions(unit);
+        initialOptions(unit);
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead
@@ -225,11 +235,18 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		//Enter Traverse and Edit Loop
 		while(true){
 			traverser.traverse();
-			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"OK\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"CANCEL\".";
-
+			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"EDIT CELLS\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"Continue\".";
 			gd.addMessage(deletePrompt);
+			gd.enableYesNoCancel("Edit Cells", "Continue");
+			gd.hideCancelButton();
+			//IJ.log("Record length: " + Integer.toString(record.cells.size()));
+			//Polygon reduced = record.cells.get(0).reducePoints(8);
+			//IJ.log("UPDATED");
+			//IJ.log("Initial length: " + Integer.toString(record.cells.get(0).getShape().npoints));
+
 			gd.showDialog();
-			if (gd.wasCanceled()) break;
+
+            if (!gd.wasOKed()) break;
 
 			//If "OK" is selected, continue the loop.
 			wait.show();
