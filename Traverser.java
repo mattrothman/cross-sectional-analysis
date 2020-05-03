@@ -211,11 +211,30 @@ public class Traverser {
 
   //This method draws every cell in the record
   public void drawAllCells(){
+    this.g = ic.getGraphics();
+    g.setColor(Color.CYAN);
+    ic.update(g);
     Cell c = record.cells.get(0);
     for(int i = 0; i < record.size(); i++){
       c = record.cells.get(i);
       drawCell(c);
     }
+  }
+
+  //didn't work :(
+  // public void finalize(){
+  //   ic.paint(g);
+  // }
+
+  //This method draws every cell in the given cellsToBeDeleted
+  public void drawDeletedCells(ArrayList<Cell> deletedCells){
+    g.setColor(Color.YELLOW);
+    Cell c = record.cells.get(0);
+    for(int i = 0; i < deletedCells.size(); i++){
+      c = deletedCells.get(i);
+      drawCell(c);
+    }
+    g.setColor(Color.CYAN);
   }
 
   //Returns true if the height of the bounding rectangle of the cell is less than 1/3 the image Height

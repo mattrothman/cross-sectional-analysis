@@ -108,7 +108,7 @@ class Record {
    */
   public void removeCell(int index) {
     cells.remove(index);
-    IJ.log("Cell " + index + " is gone. Now record has " + size() + " cells.");
+    IJ.log("Cell " + (index+1) + " is gone. Now record has " + size() + " cells.");
   }
 
   /**

@@ -20,7 +20,6 @@ import ij.measure.ResultsTable;
  */
 public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private ImagePlus  imp;             // Original image
-	//private ImageStack sstack;          // Stack result
 	private ImageProcessor ip;
 	private Wand wand;
 	private int minDiameter = 50;
@@ -28,14 +27,17 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private int        size;            // Total number of pixels
-    private int        maginification;
-
+  private int        maginification;
 	private Record record;
 	//Variables for Dialog
 	private String userTitle = "User Edit Mode";
 	private String userText = "Use the Brush Tool to clarify cell borders that the program is not recognizing. \nIgnore non-cell regions that have been outlined and numbered; you will be able to remove these items from the image and readout at another point in this program. \nClick OK when you are done editing, and the program will re-run.";
 	private String deletePrompt = "";
 	private GenericDialog gd = new GenericDialog("");
+	private ArrayList<Cell> cellsToBeDeleted = new ArrayList<Cell>();
+	private ArrayList<Cell> deletedCells = new ArrayList<Cell>();
+	private ArrayList<Cell> cellsToBeAdded = new ArrayList<Cell>();
+	private static final boolean DEBUG = true;
 
 	public static void main(String[] args) {
 		Cross_Sectional_Analyzer csa = new Cross_Sectional_Analyzer();
@@ -44,15 +46,13 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 
 	public int setup(String arg, ImagePlus imp){
 		this.imp = imp;
-		//this.imp = WindowManager.getCurrentImage();
-		// if (arg.equals("about"))
-		// {showAbout(); return DONE;}
 		return DOES_ALL;
-		//return 0;
 	}
 
-	public ArrayList<Integer> showDeletionDialog(){
+	public void showDeletionDialog1(){
 		GenericDialog gd = new GenericDialog("Delete Cells");
+		gd.setResizable(true);
+		gd.addMessage("Check the box next to a cell to delete it:");
 		int size = record.size();
 		String[] labels = new String[size];
 		boolean[] states = new boolean[size];
@@ -62,59 +62,125 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			states[i] = false;
 			c++;
 		}
-		gd.addCheckboxGroup((size/3 + 1), 3, labels, states);
+		gd.addCheckboxGroup((size/6 + 1), 6, labels, states);
+		gd.addMessage("Press OK to delete the selected cells. \nPress CANCEL to view results for the current " + record.size() + " cells." );
 		gd.showDialog();
-		ArrayList<Integer> cellsToBeDeleted = new ArrayList<Integer>();
-		// for(int i = 1; i <= size + 1; i++){
-		// 	if (gd.getNextBoolean()){
-		// 		cellsToBeDeleted.add(i);
-		// 	}
-		// }
+
 		for(int i = 0; i < size; i++){
 			if (gd.getNextBoolean()){
-				cellsToBeDeleted.add(i);
-				IJ.log("cellsToBeDeleted.add(" + i + ")");
+				cellsToBeDeleted.add(record.cells.get(i));
+				deletedCells.add(record.cells.get(i));
+				if (DEBUG) IJ.log("cellsToBeDeleted.add(" + i + "), Cell " + (i+1));
 			}
 		}
-		IJ.log("cellsToBeDeleted.size() = " + cellsToBeDeleted.size());
-		return cellsToBeDeleted;
+		if (DEBUG) IJ.log("deletedCells.size() = " + deletedCells.size());
+  }
+
+	public void deleteCells() {
+		int index = 0;
+		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
+			index = cellsToBeDeleted.get(i).cellNum - 1;
+			this.record.removeCell(index);
+		}
+		cellsToBeDeleted.clear();
+  }
+
+	public void renumberDeletedCells() {
+		int num = record.size() + 1;
+    for (Cell cell : this.deletedCells) {
+      cell.updateCellNum(num);
+      num++;
+    }
+  }
+
+	public void addCells() {
+		for(Cell cell : this.cellsToBeAdded){
+			this.record.addCell(cell);
+		}
+  }
+
+	public Boolean showDeletionDialog2(){
+		GenericDialog gd = new GenericDialog("Delete Cells");
+		gd.setResizable(true);
+		gd.pack();
+
+		gd.addMessage("Check the box next to a cell to delete it:");
+		int size1 = record.size();
+		String[] labels1 = new String[size1];
+		boolean[] states1 = new boolean[size1];
+		int c = 1;
+		for(int i = 0; i < size1; i++){
+			labels1[i] = "Cell " + c;
+			states1[i] = false;
+			c++;
+		}
+		gd.addCheckboxGroup((size1/6 + 1), 6, labels1, states1);
+
+		gd.addMessage("Check the box next to a currently deleted cell to re-add it:");
+		int size2 = cellsToBeDeleted.size();
+		String[] labels2 = new String[size2];
+		boolean[] states2 = new boolean[size2];
+		c = size1 + 1;
+		for(int i = 0; i < size2; i++){
+			labels1[i] = "Deleted Cell " + c;
+			states1[i] = false;
+			c++;
+		}
+		gd.addCheckboxGroup((size2/6 + 1), 6, labels2, states2);
+		gd.addMessage("Press OK to delete and/or re-add the selected cells. \nPress CANCEL to view results for the current " + record.size() + " cells." );
+		gd.showDialog();
+
+		if (gd.wasCanceled()) return false;
+
+		for(int i = 0; i < size1; i++){
+			if (gd.getNextBoolean()){
+				cellsToBeDeleted.add(record.cells.get(i));
+				deletedCells.add(record.cells.get(i));
+				if (DEBUG) IJ.log("cellsToBeDeleted.add(" + i + "), Cell " + (i+1));
+			}
+		}
+		if (DEBUG) IJ.log("deletedCells.size() = " + deletedCells.size());
+
+		cellsToBeAdded.clear();
+		for(int j = 0; j < (size2 - size1); j++){
+			if (gd.getNextBoolean()){
+				cellsToBeAdded.add(deletedCells.remove(j));
+				if (DEBUG) IJ.log("cellsToBeAdded.add(" + j + "), Cell " + (j+1));
+			}
+		}
+		if (DEBUG) IJ.log("cellsToBeAdded.size() = " + cellsToBeAdded.size());
+
+		return true;
   }
 
   //no negitive values
     //eventually change the n-points to area
-    public void initialOptions() {
-        GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
-        //(("label", default number)
-        //magnification, traverse distance, minimum cell area
-        gd.addNumericField("magnification", 400.0, 0);
-        gd.addNumericField("traverse distance", 10.0, 0);
-        gd.addNumericField("minimum cell perimeter", 250.0, 0);
-        gd.showDialog();
-        maginification = (int)gd.getNextNumber();
-        traverseDistance = (int)gd.getNextNumber();
-        minDiameter = (int)gd.getNextNumber();
-        if (maginification < 0) {
-            IJ.showMessage("Magnification cannot be negative. Magnification will be reset to the default value of 400X");
-            maginification = 400;
-        }
-        if (traverseDistance < 1) {
-            IJ.showMessage("Traverse distance cannot be less than 1. Traverse distance will be reset to the default value of 10");
-            traverseDistance = 10;
-        }
-        if (minDiameter < 0) {
-            IJ.showMessage("Minimum Cell Diameter cannot be negative. Magnification will be reset to the default value of 250");
-            maginification = 400;
-        }
-              
-//        IJ.log("Initial Options: ");
-//        IJ.log(Integer.toString(mag));
-//        IJ.log(Integer.toString(traverse));
-//        IJ.log(Integer.toString(perimeter));
-
-
+	public void initialOptions() {
+    GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
+    //(("label", default number)
+    //magnification, traverse distance, minimum cell area
+    gd.addNumericField("magnification", 400.0, 0);
+    gd.addNumericField("traverse distance", 10.0, 0);
+    gd.addNumericField("minimum cell perimeter", 250.0, 0);
+    gd.showDialog();
+    maginification = (int)gd.getNextNumber();
+    traverseDistance = (int)gd.getNextNumber();
+    minDiameter = (int)gd.getNextNumber();
+    if (maginification < 0) {
+        IJ.showMessage("Magnification cannot be negative. Magnification will be reset to the default value of 400X");
+        maginification = 400;
     }
+    if (traverseDistance < 1) {
+        IJ.showMessage("Traverse distance cannot be less than 1. Traverse distance will be reset to the default value of 10");
+        traverseDistance = 10;
+    }
+    if (minDiameter < 0) {
+        IJ.showMessage("Minimum Cell Diameter cannot be negative. Magnification will be reset to the default value of 250");
+        maginification = 400;
+    }
+  }
 
-    public void overLayPrompt() {
+  public void overLayPrompt() {
 		String[] choices = new String[]{"red", "blue", "green"};
 		GenericDialog gd = new GenericDialog("Save Overlay");
 		gd.addMessage("Would you like to save an overlay of the cells?");
@@ -126,6 +192,22 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		co.createAndSave();
 	}
 
+	//doesn't work
+	// public void finalDrawing() {
+	// 	//ImageProcessor ip = imp.getProcessor();
+	// 	imp.updateAndDraw();
+	// 	ip.setLineWidth(2);
+	// 	ip.setFontSize(20);
+	// 	ip.setColor(new Color(0x03fcf4));
+	// 	for (Cell curr : this.record.cells) {
+	// 			ip.drawPolygon(curr.getShape());
+	// 			String num = Integer.toString(curr.getcellNum());
+	// 			ip.drawString(num, curr.getstartx(), curr.getstarty());
+	// 	}
+	// 	imp.updateAndDraw();
+	// 	imp.show();
+	// }
+
 	public void run(ImageProcessor ip) {
 		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
 		imp.updateAndDraw();
@@ -135,7 +217,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.height = ip.getHeight();
 		this.size = width*height;
 		this.wand = new Wand(ip);
-        initialOptions();
+    initialOptions();
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead
@@ -145,35 +227,47 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		while(true){
 			traverser.traverse();
 			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"OK\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"CANCEL\".";
-			gd.addMessage(deletePrompt);
-			//IJ.log("Record length: " + Integer.toString(record.cells.size()));
-			//Polygon reduced = record.cells.get(0).reducePoints(8);
-			//IJ.log("UPDATED");
-			//IJ.log("Initial length: " + Integer.toString(record.cells.get(0).getShape().npoints));
 
-			//Create button that breaks loop
+			gd.addMessage(deletePrompt);
 			gd.showDialog();
 			if (gd.wasCanceled()) break;
+
 			//If "OK" is selected, continue the loop.
 			wait.show();
 			this.record = new Record();
 			traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
 			wait = new WaitForUserDialog(userTitle, userText);
 			this.gd = new GenericDialog("");
-			//wait.waitForUser(userTitle, userText);
 		}
-		ArrayList<Integer> cellsToBeDeleted = showDeletionDialog();
-		int index = 0;
-		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
-			index = cellsToBeDeleted.get(i).intValue();
-			this.record.removeCell(index);
-		}
-		traverser.drawAllCells();
-		//Display Readout and Allow Cell Deletion
+
+		//Deletion Mode
+		showDeletionDialog1();
+		deleteCells();
 		this.record.renumberCells();
-		this.record.createTable();
-		IJ.showMessage("Finished!");
+		renumberDeletedCells();
 		traverser.drawAllCells();
+		traverser.drawDeletedCells(deletedCells);
+
+		//Enter Deletion Loop
+		Boolean deletionLoop = true;
+		while(deletionLoop){
+			deletionLoop = showDeletionDialog2();
+			if(deletionLoop){
+				deleteCells();
+				addCells();
+				this.record.renumberCells();
+				renumberDeletedCells();
+				traverser.drawAllCells();
+				traverser.drawDeletedCells(deletedCells);
+			}
+		}
+
+		//Display Results Table
+		this.record.createTable();
+		if (DEBUG) IJ.showMessage("Finished!");
+		traverser.drawAllCells();
+		// traverser.finalize();
+		// finalDrawing();
 
 		overLayPrompt();
 
