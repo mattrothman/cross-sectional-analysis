@@ -163,25 +163,37 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		return true;
   }
 
-  //no negitive values
-    //eventually change the n-points to area
-	public void initialOptions(String unit) {
+	public Boolean initialOptions(String unit) {
     GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
-    //(("label", default number)
-    //magnification, traverse distance, minimum cell area
-    gd.addNumericField("Traverse Distance (pixels)", 10.0, 0);
-		gd.addNumericField("Minimum cell area (square " + unit + ")", 2000.0 * pixelSize * pixelSize, 0);
-    gd.showDialog();
-    traverseDistance = (int)gd.getNextNumber();
-    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
-    if (traverseDistance < 1) {
-      IJ.showMessage("Traverse distance cannot be less than 1. Traverse distance will be reset to the default value of 10");
-      traverseDistance = 10;
-    }
-		if (minArea < 0) {
-      IJ.showMessage("Minimum Cell Diameter cannot be negative. Magnification will be reset to the default value");
-      minArea = 2500.0;
+		traverseDistance = 10;
+		minArea = 825.0 * pixelSize * pixelSize;
+		while(true){
+			gd = new GenericDialog("Cross Analyzer Setup");
+			gd.addNumericField("Traverse Distance (pixels)", traverseDistance, 0);
+			gd.addNumericField("Minimum Cell Area (square " + unit + ")", minArea, 0);
+	    gd.showDialog();
+			if (gd.wasCanceled()) return false;
+	    traverseDistance = (int)gd.getNextNumber();
+	    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
+			if((traverseDistance < 1) && (minArea < 0)){
+				traverseDistance = 10;
+				minArea = 825.0 * pixelSize * pixelSize;
+				IJ.showMessage("Traverse Distance cannot be less than 1 pixel and Minimum Cell Area cannot be negative. Please enter valid traverse inputs.");
+				continue;
+			}
+	    else if (traverseDistance < 1) {
+				traverseDistance = 10;
+	      IJ.showMessage("Traverse Distance cannot be less than 1 pixel. Please enter a valid traverse distance.");
+				continue;
+	    }
+			else if (minArea < 0) {
+				minArea = 825.0 * pixelSize * pixelSize;
+	      IJ.showMessage("Minimum Cell Area cannot be negative. Please enter a valid minimum cell area.");
+				continue;
+			}
+			break;
 		}
+		return true;
   }
 
 	/**
@@ -215,9 +227,6 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	// }
 
 	public void run(ImageProcessor ip) {
-		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
-		imp.updateAndDraw();
-
 		//if (!showDialog()) return;
 		this.width = ip.getWidth();
 		this.height = ip.getHeight();
@@ -226,7 +235,11 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		Calibration cal = imp.getCalibration();
 		pixelSize = cal.pixelWidth;
 		String unit = cal.getUnit();
-        initialOptions(unit);
+        Boolean runPlugin = initialOptions(unit);
+		if(!runPlugin) return;
+		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
+		imp.updateAndDraw();
+
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead
@@ -257,26 +270,27 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		}
 
 		//Deletion Mode
-		showDeletionDialog1();
-		deleteCells();
-		this.record.renumberCells();
-		renumberDeletedCells();
-		traverser.drawAllCells();
-		traverser.drawDeletedCells(deletedCells);
+        Boolean deletionLoop = showDeletionDialog1();
+		if (deletionLoop) {
+            deleteCells();
+            this.record.renumberCells();
+            renumberDeletedCells();
+            traverser.drawAllCells();
+            traverser.drawDeletedCells(deletedCells);
 
-		//Enter Deletion Loop
-		Boolean deletionLoop = true;
-		while(deletionLoop){
-			deletionLoop = showDeletionDialog2();
-			if(deletionLoop){
-				deleteCells();
-				addCells();
-				this.record.renumberCells();
-				renumberDeletedCells();
-				traverser.drawAllCells();
-				traverser.drawDeletedCells(deletedCells);
-			}
-		}
+            //Enter Deletion Loop
+            while (deletionLoop) {
+                deletionLoop = showDeletionDialog2();
+                if (deletionLoop) {
+                    deleteCells();
+                    addCells();
+                    this.record.renumberCells();
+                    renumberDeletedCells();
+                    traverser.drawAllCells();
+                    traverser.drawDeletedCells(deletedCells);
+                }
+            }
+        }
 
 		//Display Results Table
 		this.record.createTable(pixelSize, unit);
