@@ -51,7 +51,7 @@ public class Traverser {
   private Wand wand;
   private int traverseDistance; //The distance between in pixels between calls of traverseOnce()
   private int x, y; //The location (x,y coordinate) of the current pixel
-  private int minDiameter; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
+  private double minArea; //holds the minimum diameter of a cell. In other words, how big of a diameter must be able to fit somewhere in the cell outline
   private ImagePlus imp;
   private int width; //The width of image
   private int height; //The heght of image
@@ -73,10 +73,10 @@ public class Traverser {
   /**
   * Creates a new Traverser
   */
-  public Traverser(ImagePlus image, ImageProcessor ip, int minDiameter, int traverseDistance, Record record) {
+  public Traverser(ImagePlus image, ImageProcessor ip, double minArea, int traverseDistance, Record record) {
     if (DEBUG) IJ.log("Traverser being constructed...");
     this.imp = image;
-    this.minDiameter = minDiameter;
+    this.minArea = minArea;
     this.traverseDistance = traverseDistance;
     this.record = record;
     this.x = traverseDistance;
@@ -290,7 +290,7 @@ public class Traverser {
     Cell c = new Cell(xpoints, ypoints, x, y, 0);
 
 
-    if (w.npoints>minDiameter && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) {
+    if (c.getArea() > minArea && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) {
 
       addCell(c);
 

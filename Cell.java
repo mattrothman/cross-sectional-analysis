@@ -67,8 +67,23 @@ class Cell {
     startx = countx/shape.npoints;
     starty = county/shape.npoints;
   }
-
-
+//
+//  public static double pixelArea(Polygon shape) {
+//
+//      int areaTotal = 0;
+//      for (int i = 0; i < shape.npoints - 2; i++) {
+//        areaTotal += -1 * shape.ypoints[i] * shape.xpoints[i+1] + shape.xpoints[i] * shape.ypoints[i+1];
+//      }
+//      areaTotal += -1 * shape.ypoints[shape.npoints-1] * shape.xpoints[0] + shape.xpoints[shape.npoints-1] * shape.ypoints[0];
+//      areaTotal += Math.abs(areaTotal);
+//      return areaTotal;
+////    area = 0
+////    for i in [0, N - 2]:
+////    area += -p[i].y * p[i+1].x + p[i].x * p[i+1].y
+////    area += -p[N-1].y * p[0].x + p[N-1].x * p[0].y
+////    area = 0.5 * abs(area)
+//
+//  }
 
   public void logPoints(){
 
@@ -139,7 +154,7 @@ class Cell {
   }
 
   // Unfortunately the imageJ method using getArea was private so I copied the code over.
-  public final double calculateArea(Polygon p) {
+  public static final double calculateArea(Polygon p) {
     if (p==null) return Double.NaN;
     int carea = 0;
     int iminus1;

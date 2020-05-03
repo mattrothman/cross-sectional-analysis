@@ -12,6 +12,8 @@ import ij.gui.WaitForUserDialog;
 import ij.gui.GenericDialog;
 import java.util.ArrayList;
 import ij.measure.ResultsTable;
+import ij.measure.*;
+
 
 /**
  * ImageJ plugin to measure the areas of skeletal muscle fibers.
@@ -22,12 +24,12 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private ImagePlus  imp;             // Original image
 	private ImageProcessor ip;
 	private Wand wand;
-	private int minDiameter = 50;
+	private double minArea;
 	private int traverseDistance = 10;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private int        size;            // Total number of pixels
-  private int        maginification;
+	private double pixelSize;
 	private Record record;
 	//Variables for Dialog
 	private String userTitle = "User Edit Mode";
@@ -217,9 +219,11 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.height = ip.getHeight();
 		this.size = width*height;
 		this.wand = new Wand(ip);
-    initialOptions();
+		Calibration cal = imp.getCalibration();
+		pixelSize = cal.pixelWidth;
+        initialOptions();
 		this.record = new Record();
-		Traverser traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
+		Traverser traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead
 		WaitForUserDialog wait = new WaitForUserDialog(userTitle, userText);
 
@@ -235,7 +239,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 			//If "OK" is selected, continue the loop.
 			wait.show();
 			this.record = new Record();
-			traverser = new Traverser(imp, ip, minDiameter, traverseDistance, record);
+			traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 			wait = new WaitForUserDialog(userTitle, userText);
 			this.gd = new GenericDialog("");
 		}
@@ -263,13 +267,28 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		}
 
 		//Display Results Table
-		this.record.createTable();
+		this.record.createTable(pixelSize);
 		if (DEBUG) IJ.showMessage("Finished!");
 		traverser.drawAllCells();
 		// traverser.finalize();
 		// finalDrawing();
 
-		overLayPrompt();
+//        Calibration cal = imp.getCalibration();
+//        double pixel = cal.pixelWidth;
+//        IJ.log(Double.toString(pixel));
+//        Polygon cell1 = record.cells.get(0).getShape();
+//        int[] x = new int[]{10,10,30,30};
+//        int[] y = new int[]{40,40,50,50};
+//        Polygon square = new Polygon(x,y,4);
+//        double pixelArea = Cell.pixelArea(square);
+//
+//        double cellArea = pixelArea * pixel * pixel;
+//        IJ.log("Square Area: " + Double.toString(cellArea));
+//
+//        Cell cell = new Cell(cell1.xpoints, cell1.ypoints, 20,45, 3);
+//        IJ.log("Cell1 Area: " + Double.toString(cell.calculateArea(cell1) * pixel * pixel));
+
+        overLayPrompt();
 
 	}
 }

@@ -133,27 +133,13 @@ class Record {
     return false;
   }
 
-  public void createTable() {
-    //new ResultsTable
-    ///** Adds a value to the end of the given column. If the column
-    //		does not exist, it is created.
-    //		There is an example at:<br>
-    //		http://imagej.nih.gov/ij/plugins/sine-cosine.html
-    //	*/
-    //	public void addValue(String column, double value)
-
-    ///** Constructs a ResultsTable with 'nRows' rows. */
-    //	public ResultsTable(Integer nRows) {
-    //		init();
-    //		for (int i=0; i<nRows; i++)
-    //			incrementCounter();
-    //	}
+  public void createTable(double pixelSize) {
 
     ResultsTable table = new ResultsTable();
     for (Cell cell : cells) {
       table.incrementCounter();
       table.addValue("Cell #", cell.cellNum);
-      table.addValue("Area", cell.getArea());
+      table.addValue("Area", cell.getArea() * pixelSize * pixelSize);
       table.addValue("Number of Points", cell.getShape().npoints);
     }
     String title = "Results";
