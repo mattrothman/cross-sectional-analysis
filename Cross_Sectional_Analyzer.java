@@ -6,6 +6,7 @@ import java.awt.*;
 import ij.gui.Wand;
 import ij.WindowManager;
 import java.util.Arrays;
+import java.awt.event.*;
 //Import statements for Dialog
 import java.awt.Dialog;
 import ij.gui.WaitForUserDialog;
@@ -20,7 +21,7 @@ import ij.measure.*;
  *
  * @author Matthew Rothman, Nalin Richardson, Thalia Barr-Malec
  */
-public class Cross_Sectional_Analyzer implements PlugInFilter {
+public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	private ImagePlus  imp;             // Original image
 	private ImageProcessor ip;
 	private Wand wand;
@@ -31,6 +32,8 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private int        size;            // Total number of pixels
 	private double pixelSize;
 	private Record record;
+	private Traverser traverser;
+	private ImageCanvas canvas;
 	//Variables for Dialog
 	private String userTitle = "User Edit Mode";
 	private String userText = "Use the Brush Tool to clarify cell borders that the program is not recognizing. \nIgnore non-cell regions that have been outlined and numbered; you will be able to remove these items from the image and readout at another point in this program. \nClick OK when you are done editing, and the program will re-run.";
@@ -210,6 +213,15 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		co.createAndSave();
 	}
 
+	public void mouseClicked(MouseEvent e) {
+		//traverser.drawAllCells();
+	}
+	public void mousePressed(MouseEvent e){}
+	public void	mouseEntered(MouseEvent e){}
+	public void	mouseExited(MouseEvent e){}
+	public void	mouseReleased(MouseEvent e){
+		traverser.drawAllCells();
+	}
 	//doesn't work
 	// public void finalDrawing() {
 	// 	//ImageProcessor ip = imp.getProcessor();
@@ -239,9 +251,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		if(!runPlugin) return;
 		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
 		imp.updateAndDraw();
-
+		canvas = imp.getCanvas();
+		canvas.addMouseListener(this);
 		this.record = new Record();
-		Traverser traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
+		this.traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead
 		WaitForUserDialog wait = new WaitForUserDialog(userTitle, userText);
 
