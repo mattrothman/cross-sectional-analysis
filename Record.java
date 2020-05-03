@@ -12,6 +12,7 @@ class Record {
 
   // To-do: decide if this is the right data structure for the job
   public ArrayList<Cell> cells;
+  private static final boolean DEBUG = false;
 
   public Record() {
     this.cells = new ArrayList<Cell>();
@@ -108,7 +109,7 @@ class Record {
    */
   public void removeCell(int index) {
     cells.remove(index);
-    IJ.log("Cell " + (index+1) + " is gone. Now record has " + size() + " cells.");
+    if(DEBUG) IJ.log("Cell " + (index+1) + " is gone. Now record has " + size() + " cells.");
   }
 
   /**
@@ -133,14 +134,14 @@ class Record {
     return false;
   }
 
-  public void createTable(double pixelSize) {
+  public void createTable(double pixelSize, String unit) {
 
     ResultsTable table = new ResultsTable();
     for (Cell cell : cells) {
       table.incrementCounter();
       table.addValue("Cell #", cell.cellNum);
-      table.addValue("Area", cell.getArea() * pixelSize * pixelSize);
-      table.addValue("Number of Points", cell.getShape().npoints);
+      table.addValue("Area (square " + unit + ")", cell.getArea() * pixelSize * pixelSize);
+      //table.addValue("Number of Points", cell.getShape().npoints);
     }
     String title = "Results";
     table.show(title);

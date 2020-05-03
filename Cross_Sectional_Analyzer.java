@@ -39,7 +39,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 	private ArrayList<Cell> cellsToBeDeleted = new ArrayList<Cell>();
 	private ArrayList<Cell> deletedCells = new ArrayList<Cell>();
 	private ArrayList<Cell> cellsToBeAdded = new ArrayList<Cell>();
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	public static void main(String[] args) {
 		Cross_Sectional_Analyzer csa = new Cross_Sectional_Analyzer();
@@ -157,29 +157,23 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 
   //no negitive values
     //eventually change the n-points to area
-	public void initialOptions() {
+	public void initialOptions(String unit) {
     GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
     //(("label", default number)
     //magnification, traverse distance, minimum cell area
-    gd.addNumericField("magnification", 400.0, 0);
-    gd.addNumericField("traverse distance", 10.0, 0);
-    gd.addNumericField("minimum cell perimeter", 250.0, 0);
+    gd.addNumericField("Traverse Distance (pixels)", 10.0, 0);
+		gd.addNumericField("Minimum cell area (square " + unit + ")", 2000.0 * pixelSize * pixelSize, 0);
     gd.showDialog();
-    maginification = (int)gd.getNextNumber();
     traverseDistance = (int)gd.getNextNumber();
-    minDiameter = (int)gd.getNextNumber();
-    if (maginification < 0) {
-        IJ.showMessage("Magnification cannot be negative. Magnification will be reset to the default value of 400X");
-        maginification = 400;
-    }
+    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
     if (traverseDistance < 1) {
-        IJ.showMessage("Traverse distance cannot be less than 1. Traverse distance will be reset to the default value of 10");
-        traverseDistance = 10;
+      IJ.showMessage("Traverse distance cannot be less than 1. Traverse distance will be reset to the default value of 10");
+      traverseDistance = 10;
     }
-    if (minDiameter < 0) {
-        IJ.showMessage("Minimum Cell Diameter cannot be negative. Magnification will be reset to the default value of 250");
-        maginification = 400;
-    }
+		if (minArea < 0) {
+      IJ.showMessage("Minimum Cell Diameter cannot be negative. Magnification will be reset to the default value");
+      minArea = 2500.0;
+		}
   }
 
   public void overLayPrompt() {
@@ -221,7 +215,8 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		this.wand = new Wand(ip);
 		Calibration cal = imp.getCalibration();
 		pixelSize = cal.pixelWidth;
-        initialOptions();
+		String unit = cal.getUnit();
+    initialOptions(unit);
 		this.record = new Record();
 		Traverser traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 		//Consider using NonBlockingGenericDialog instead
@@ -267,7 +262,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter {
 		}
 
 		//Display Results Table
-		this.record.createTable(pixelSize);
+		this.record.createTable(pixelSize, unit);
 		if (DEBUG) IJ.showMessage("Finished!");
 		traverser.drawAllCells();
 		// traverser.finalize();
