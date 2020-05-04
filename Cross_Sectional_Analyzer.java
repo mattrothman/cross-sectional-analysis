@@ -29,7 +29,6 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	private int traverseDistance = 10;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
-	private int        size;            // Total number of pixels
 	private double pixelSize;
 	private Record record;
 	private Traverser traverser;
@@ -70,13 +69,13 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 
 		gd.addCheckboxGroup((size/6 + 1), 6, labels, states);
 		gd.addMessage("Press DELETE CELLS to delete the selected cells. \nPress CONTINUE to view results for the current " + record.size() + " cells." );
-        gd.enableYesNoCancel("Delete Cells", "Continue");
-        gd.hideCancelButton();
-        gd.showDialog();
+    gd.enableYesNoCancel("Delete Cells", "Continue");
+    gd.hideCancelButton();
+    gd.showDialog();
 
-        if (!gd.wasOKed()) return false;
+    if (!gd.wasOKed()) return false;
 
-        for(int i = 0; i < size; i++){
+    for(int i = 0; i < size; i++){
 			if (gd.getNextBoolean()){
 				cellsToBeDeleted.add(record.cells.get(i));
 				deletedCells.add(record.cells.get(i));
@@ -128,22 +127,25 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		gd.addCheckboxGroup((size1/6 + 1), 6, labels1, states1);
 
 		gd.addMessage("Check the box next to a currently deleted cell to re-add it:");
-		int size2 = cellsToBeDeleted.size();
+		int size2 = deletedCells.size();
+		if (DEBUG) IJ.log("deletedCells.size() = " + size2);
 		String[] labels2 = new String[size2];
 		boolean[] states2 = new boolean[size2];
 		c = size1 + 1;
-		for(int i = 0; i < size2; i++){
-			labels1[i] = "Deleted Cell " + c;
-			states1[i] = false;
+		for(int j = 0; j < size2; j++){
+			if (DEBUG) IJ.log("labels1[j] = Deleted Cell "  + c);
+			labels2[j] = "Deleted Cell " + c;
+			states2[j] = false;
 			c++;
 		}
 		gd.addCheckboxGroup((size2/6 + 1), 6, labels2, states2);
+		//gd.addCheckboxGroup((size1/6 + 1), 6, labels1, states1);
 		gd.addMessage("Press DELETE CELLS to delete and/or re-add the selected cells. \nPress CONTINUE to view results for the current " + record.size() + " cells." );
-        gd.enableYesNoCancel("Delete Cells", "Continue");
-        gd.hideCancelButton();
-        gd.showDialog();
+    gd.enableYesNoCancel("Delete Cells", "Continue");
+    gd.hideCancelButton();
+    gd.showDialog();
 
-        if (!gd.wasOKed()) return false;
+    if (!gd.wasOKed()) return false;
 
 		for(int i = 0; i < size1; i++){
 			if (gd.getNextBoolean()){
@@ -152,16 +154,19 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 				if (DEBUG) IJ.log("cellsToBeDeleted.add(" + i + "), Cell " + (i+1));
 			}
 		}
-		if (DEBUG) IJ.log("deletedCells.size() = " + deletedCells.size());
 
 		cellsToBeAdded.clear();
-		for(int j = 0; j < (size2 - size1); j++){
+		for(int j = 0; j < (size2); j++){
 			if (gd.getNextBoolean()){
-				cellsToBeAdded.add(deletedCells.remove(j));
+				cellsToBeAdded.add(deletedCells.get(j));
 				if (DEBUG) IJ.log("cellsToBeAdded.add(" + j + "), Cell " + (j+1));
 			}
 		}
+		for(int k = 0; k < cellsToBeAdded.size(); k++){
+			deletedCells.remove(cellsToBeAdded.get(k));
+		}
 		if (DEBUG) IJ.log("cellsToBeAdded.size() = " + cellsToBeAdded.size());
+		if (DEBUG) IJ.log("deletedCells.size() = " + cellsToBeAdded.size());
 
 		return true;
   }
@@ -216,65 +221,47 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	public void mouseClicked(MouseEvent e) {
 		//traverser.drawAllCells();
 	}
-	public void mousePressed(MouseEvent e){}
+	public void mousePressed(MouseEvent e){
+		traverser.drawAllCells();
+	}
 	public void	mouseEntered(MouseEvent e){}
 	public void	mouseExited(MouseEvent e){}
 	public void	mouseReleased(MouseEvent e){
 		traverser.drawAllCells();
 	}
-	//doesn't work
-	// public void finalDrawing() {
-	// 	//ImageProcessor ip = imp.getProcessor();
-	// 	imp.updateAndDraw();
-	// 	ip.setLineWidth(2);
-	// 	ip.setFontSize(20);
-	// 	ip.setColor(new Color(0x03fcf4));
-	// 	for (Cell curr : this.record.cells) {
-	// 			ip.drawPolygon(curr.getShape());
-	// 			String num = Integer.toString(curr.getcellNum());
-	// 			ip.drawString(num, curr.getstartx(), curr.getstarty());
-	// 	}
-	// 	imp.updateAndDraw();
-	// 	imp.show();
-	// }
 
 	public void run(ImageProcessor ip) {
 		//if (!showDialog()) return;
 		this.width = ip.getWidth();
 		this.height = ip.getHeight();
-		this.size = width*height;
 		this.wand = new Wand(ip);
+
 		Calibration cal = imp.getCalibration();
 		pixelSize = cal.pixelWidth;
 		String unit = cal.getUnit();
-        Boolean runPlugin = initialOptions(unit);
+
+		Boolean runPlugin = initialOptions(unit);
 		if(!runPlugin) return;
+		//Preprocess image
 		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
 		imp.updateAndDraw();
+		//Setup MouseListener for user-edit mode
 		canvas = imp.getCanvas();
 		canvas.addMouseListener(this);
 		this.record = new Record();
 		this.traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
-		//Consider using NonBlockingGenericDialog instead
 		WaitForUserDialog wait = new WaitForUserDialog(userTitle, userText);
 
 		//Enter Traverse and Edit Loop
 		while(true){
 			traverser.traverse();
-			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"EDIT CELLS\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"Continue\".";
+			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"Edit Cells\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"Continue\".";
 			gd.addMessage(deletePrompt);
 			gd.enableYesNoCancel("Edit Cells", "Continue");
 			gd.hideCancelButton();
-			//IJ.log("Record length: " + Integer.toString(record.cells.size()));
-			//Polygon reduced = record.cells.get(0).reducePoints(8);
-			//IJ.log("UPDATED");
-			//IJ.log("Initial length: " + Integer.toString(record.cells.get(0).getShape().npoints));
-
 			gd.showDialog();
-
-            if (!gd.wasOKed()) break;
-
-			//If "OK" is selected, continue the loop.
+			if (!gd.wasOKed()) break;
+			//If "Edit Cells" is selected, continue the loop.
 			wait.show();
 			this.record = new Record();
 			traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
@@ -283,34 +270,36 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		}
 
 		//Deletion Mode
-        Boolean deletionLoop = showDeletionDialog1();
+    Boolean deletionLoop = showDeletionDialog1();
 		if (deletionLoop) {
-            deleteCells();
-            this.record.renumberCells();
-            renumberDeletedCells();
-            traverser.drawAllCells();
-            traverser.drawDeletedCells(deletedCells);
+      deleteCells();
+      this.record.renumberCells();
+      renumberDeletedCells();
+      traverser.drawAllCells();
+      traverser.drawDeletedCells(deletedCells);
 
-            //Enter Deletion Loop
-            while (deletionLoop) {
-                deletionLoop = showDeletionDialog2();
-                if (deletionLoop) {
-                    deleteCells();
-                    addCells();
-                    this.record.renumberCells();
-                    renumberDeletedCells();
-                    traverser.drawAllCells();
-                    traverser.drawDeletedCells(deletedCells);
-                }
-            }
+      //Enter Deletion Loop
+      while (deletionLoop) {
+        deletionLoop = showDeletionDialog2();
+        if (deletionLoop) {
+          deleteCells();
+          addCells();
+          this.record.renumberCells();
+          renumberDeletedCells();
+          traverser.drawAllCells();
+          traverser.drawDeletedCells(deletedCells);
         }
+      }
+    }
 
 		//Display Results Table
 		this.record.createTable(pixelSize, unit);
-		if (DEBUG) IJ.showMessage("Finished!");
 		traverser.drawAllCells();
 		// traverser.finalize();
 		// finalDrawing();
+		overLayPrompt();
+	}
+}
 
 //        Calibration cal = imp.getCalibration();
 //        double pixel = cal.pixelWidth;
@@ -327,7 +316,18 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 //        Cell cell = new Cell(cell1.xpoints, cell1.ypoints, 20,45, 3);
 //        IJ.log("Cell1 Area: " + Double.toString(cell.calculateArea(cell1) * pixel * pixel));
 
-        overLayPrompt();
-
-	}
-}
+//doesn't work
+// public void finalDrawing() {
+// 	//ImageProcessor ip = imp.getProcessor();
+// 	imp.updateAndDraw();
+// 	ip.setLineWidth(2);
+// 	ip.setFontSize(20);
+// 	ip.setColor(new Color(0x03fcf4));
+// 	for (Cell curr : this.record.cells) {
+// 			ip.drawPolygon(curr.getShape());
+// 			String num = Integer.toString(curr.getcellNum());
+// 			ip.drawString(num, curr.getstartx(), curr.getstarty());
+// 	}
+// 	imp.updateAndDraw();
+// 	imp.show();
+// }

@@ -131,6 +131,8 @@ public class Traverser {
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse () {
+    g.setColor(Color.CYAN);
+    ic.update(g);
     while (this.y < this.height) {
       // IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
       // IJ.log("CHANGES");
