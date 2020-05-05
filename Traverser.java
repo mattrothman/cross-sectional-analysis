@@ -216,7 +216,8 @@ public class Traverser {
     this.g = ic.getGraphics();
     g.setColor(Color.CYAN);
     ic.update(g);
-    Cell c = record.cells.get(0);
+    //Cell c = record.cells.get(0);
+    Cell c;
     for(int i = 0; i < record.size(); i++){
       c = record.cells.get(i);
       drawCell(c);
