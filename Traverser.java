@@ -145,14 +145,14 @@ public class Traverser {
   * If the point is inside a new, valid cell, a new cell is created and added to the record class.
   */
   public void traverseOnce () {
-    int recorded = isRecorded();
-    if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    if (recorded == -1) {
-      Wand wand = doWand(x, y, TOLERANCE);
-    }
+    //int recorded = isRecorded();
+    //if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
+    //if (recorded == -1) {
+    Wand wand = doWand(x, y, TOLERANCE);
+   /** }
     else{
       if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    }
+    } **/
     nextPoint();
   }
 
@@ -163,9 +163,10 @@ public class Traverser {
   * @return Either the number of cell that the next point is inside,
   * or -1 if the next point is not already inside of a recorded cell.
   */
+  /**
   public int isRecorded () { //OR public int isRecorded(){
     return record.whichCell(this.x, this.y);
-  }
+  } **/
 
 
 
@@ -191,13 +192,13 @@ public class Traverser {
   }
 
   public void drawCell(Cell cell){
-    Cell c = new Cell(cell.getShape().xpoints, cell.getShape().ypoints, cell.getstartx(), cell.getstarty(), cell.getcellNum());
+    Cell c = new Cell(cell.getShape().xpoints, cell.getShape().ypoints, cell.getcellNum());
     Polygon p = c.getShape();
     double mag = ic.getMagnification();
 
     String size = Integer.toString(c.getcellNum());
-    int mx = (int) (mag * c.getstartx());
-    int my = (int) (mag * c.getstarty());
+    int mx = (int) (mag * c.getcenterX());
+    int my = (int) (mag * c.getcenterY());
     g.drawString(size, mx, my);
 
     //Adjust polygon outline to image magnification
@@ -290,7 +291,7 @@ public class Traverser {
 
     int[] xpoints = w.xpoints;
     int[] ypoints = w.ypoints;
-    Cell c = new Cell(xpoints, ypoints, x, y, 0);
+    Cell c = new Cell(xpoints, ypoints, 0);
 
 
     if (c.getArea() > minArea && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) {
@@ -299,10 +300,10 @@ public class Traverser {
       drawCell(c);
 
       if (DEBUG) {
-        IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
-        IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getstartx() + "," + c.getstarty());
+        IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getcenterX() + "," + c.getcenterY());
+        IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getcenterX() + "," + c.getcenterY());
         IJ.log("" + c.toString());
-        IJ.log("Roundness: " + c.calcRoundness());
+        //IJ.log("Roundness: " + c.calcRoundness());
         IJ.log("Area: " + c.getArea());
         IJ.log("\n");
       }

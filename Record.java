@@ -51,6 +51,7 @@ class Record {
    * @param p
    * @return Returns the cell in record that contains the given point, or else returns -1.
    */
+  /**
   public int whichCell(int x, int y) {
     for (int i = 0; i < cells.size(); i++) {
       Cell currCell = cells.get(i);
@@ -59,7 +60,7 @@ class Record {
       }
     }
     return -1;
-  }
+  } **/
 
 
   /**
@@ -102,11 +103,12 @@ class Record {
    * Checks to see if we're about to draw overlapping cell nums (hopefully will catch repeat cells missed by arraySharesPoints)
    */
   public Boolean sameCenterPoints(Cell cell) {
-    int startx = cell.getstartx();
-    int starty = cell.getstarty();
+    int centerX = cell.getcenterX();
+    int centerY = cell.getcenterY();
     for (int i = 0; i < cells.size(); i++) {
       Cell currCell = cells.get(i);
-      if (currCell.getstartx()==startx && currCell.getstarty()==starty) {
+      if (currCell.getcenterX()==centerX && currCell.getcenterY()==centerY
+      ) {
         return (true);
       }
     }

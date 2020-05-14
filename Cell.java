@@ -1,6 +1,5 @@
 
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.lang.Math;
 import java.util.Arrays;
 import ij.*;
@@ -11,21 +10,18 @@ import ij.*;
 Cell class holds a representation of a cell by storing a list of x and y coordinates of its perimeter`
 */
 
-//TO DO: change the name "startx" and "starty" to centerX and centerY
-  //TO DO: startx and starty don't need to be in the constructor
-  //TO DO: remove rectangle import
 
 class Cell {
 
   private double area;  // Area of the cell in pixels
   private Polygon shape; // Polygon shape- contains an array of x and y points that make the coordinates of the cell
-  private int startx; // The x coordinate of the cell number label
-  private int starty; // The y coordinate of the cell number label
+  private int centerX; // The x coordinate of the cell number label
+  private int centerY; // The y coordinate of the cell number label
   public int cellNum; // The cell number
 
 
 
-  public Cell(int[] xpoints, int[] ypoints, int startx, int starty, int cellNum) {
+  public Cell(int[] xpoints, int[] ypoints, int cellNum) {
     //Wand returns polygon with unwanted trailing 0's at the end
     int end = xpoints.length;
     for (int i = xpoints.length -1; i > 0; i--) { //loops through and finds the index where the 0's start
@@ -47,7 +43,7 @@ class Cell {
 
   /**
    * Centers the point in the middle of the cell so the cell number is in a good spot. This value is stored in the
-   * startx and starty
+   * centerX and centerY
    */
   public void centerPoints() {
     int countx = 0;
@@ -56,8 +52,8 @@ class Cell {
       countx += shape.xpoints[i];
       county += shape.ypoints[i];
     }
-    startx = countx/shape.npoints; // divides total x by number of points to get the average x
-    starty = county/shape.npoints; // divides total y by number of points to get the average y
+    centerX = countx/shape.npoints; // divides total x by number of points to get the average x
+    centerY = county/shape.npoints; // divides total y by number of points to get the average y
   }
 
 
@@ -85,13 +81,13 @@ class Cell {
   //*****************************DEBGUGGING METHODS BELOW
 
   //DEBGUGGING METHOD
-  public int getstartx(){
-    return startx;
+  public int getcenterX(){
+    return centerX;
   }
 
   //DEBGUGGING METHOD
-  public int getstarty(){
-    return starty;
+  public int getcenterY(){
+    return centerY;
   }
 
   //DEBGUGGING METHOD
@@ -131,49 +127,6 @@ class Cell {
     return toString;
 
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-  //This method will not be used in final implementation!
-  //This method exists so we can get a range for the roundness or our cells
-  //So that we can adjust our minRoundness value
-  //FIND IN TRAVERSER
-  public double calcRoundness(){
-    Rectangle bounds = shape.getBounds();
-    double height = bounds.getHeight();
-    double width = bounds.getWidth();
-    double length = width;
-    if(height > width){
-      length = height;
-    }
-    double roundness = this.area/(Math.pow(length, 2.0));
-    return roundness;
-  }
-
-  // FIND IN TRAVERSER
-  public boolean contains(int xpoint, int ypoint) {
-    return shape.contains(xpoint, ypoint);
-
-  }
-
-  // @Override
-  // @SuppressWarnings("unchecked")
-  //DELETE IN TRAVERSER FIRST
-  public Boolean equals(Cell c){
-    Polygon p = c.getShape();
-    int[] xp = p.xpoints;
-    int[] yp = p.ypoints;
-    int overlap = 0;
-    for (int i = 0; i < p.npoints; i++){
-      if (contains(xp[i], yp[i])) overlap++;
-      if (overlap > 5) return true;
-    }
-    for (int i = 0; i < shape.npoints; i++){
-      if (c.contains(shape.xpoints[i], shape.ypoints[i])) overlap++;
-      if (overlap > 5) return true;
-    }
-    if(area == c.getArea()) return true;
-    if((area - c.getArea() <= 2) || (-area + c.getArea() <= 2)) return true;
-    else return false;
-  }
 
 }
