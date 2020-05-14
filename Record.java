@@ -1,16 +1,15 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.awt.Polygon;
 import java.util.Arrays;
 import ij.*;
 import ij.measure.ResultsTable;
 
+/**
+ * Record class keeps a list of that are created by traverser. A ResultsTable of cell stats can be printed as well.
+ */
 
 class Record {
 
-  // To-do: decide if this is the right data structure for the job
+  // TO DO: rename arraySharesPoints
   public ArrayList<Cell> cells;
   private static final boolean DEBUG = false;
 
@@ -18,14 +17,10 @@ class Record {
     this.cells = new ArrayList<Cell>();
   }
 
-  // We could make this return either the cell itself or the current record if we wanted to
+
 
   /**
-   * public void addCell(int[] xpoints, int[] ypoints, int startx, int starty) {
-   * int cellNum = cells.size() + 1;
-   * Cell cellToAdd = new Cell(xpoints, ypoints, startx, starty, cellNum);
-   * cells.add(cellToAdd);
-   * }
+   * Adds a cell to record
    */
 
   public void addCell(Cell cell) {
@@ -35,40 +30,20 @@ class Record {
   }
 
   /**
-   * public boolean cellsSharePoints(Cell c1, Cell c2) {
-   * if (Arrays.equals(c1.getShape().xpoints, c2.getShape().xpoints) &&  Arrays.equals(c1.getShape().ypoints, c2.getShape().ypoints)) {
-   * return true;
-   * }
-   * return false;
-   * }
+   * Checks to see if a cell is the same as a prexisting cell in traverser by testing if the cell shares all
+   * coordinates with another cell in record.
    **/
   public boolean arraySharesPoints(Cell c) {
     for (Cell cell : cells) {
       if (Arrays.equals(c.getShape().xpoints, cell.getShape().xpoints)) { // && Arrays.equals(c.getShape().ypoints, cell.getShape().ypoints)) {
-//          IJ.log("\tArrays are equal");
+
         return true;
       }
-//      IJ.log(Arrays.toString(c.getShape().xpoints));
-//      IJ.log(Arrays.toString(cell.getShape().xpoints));
-//      IJ.log("\t Arrays are not equal");
     }
     return false;
 
   }
 
-
-  /**
-   * Checks to see if the last cell .equals() any other cell in the record..
-   *
-   * @return Returns the index of the cell that .equals() the last cell, or else returns -1.
-   */
-  public int equals() {
-    Cell c = getLastCell();
-    for (int i = 0; i < cells.size() - 1; i++) {
-      if (cells.get(i).equals(c)) return (i + 1);
-    }
-    return -1;
-  }
 
   /**
    * Returns which cell in record contains the given point.
@@ -86,6 +61,7 @@ class Record {
     return -1;
   }
 
+
   /**
    * Returns the last cell.
    *
@@ -94,6 +70,7 @@ class Record {
   public Cell getLastCell() {
     return cells.get(cells.size() - 1);
   }
+
 
   /**
    * Returns the size() of cells.
@@ -104,6 +81,7 @@ class Record {
     return cells.size();
   }
 
+
   /**
    * Removes the cell at index in cells.
    */
@@ -111,6 +89,7 @@ class Record {
     cells.remove(index);
     if(DEBUG) IJ.log("Cell " + (index+1) + " is gone. Now record has " + size() + " cells.");
   }
+
 
   /**
    * Removes the last cell from cells.
@@ -134,6 +113,11 @@ class Record {
     return false;
   }
 
+  /**
+   * Creates a Results table to print stats of all the cell's areas. Table has values of cell number and area.
+   * @param pixelSize
+   * @param unit
+   */
   public void createTable(double pixelSize, String unit) {
 
     ResultsTable table = new ResultsTable();
@@ -141,12 +125,14 @@ class Record {
       table.incrementCounter();
       table.addValue("Cell #", cell.cellNum);
       table.addValue("Area (square " + unit + ")", cell.getArea() * pixelSize * pixelSize);
-      //table.addValue("Number of Points", cell.getShape().npoints);
     }
     String title = "Results";
     table.show(title);
   }
 
+  /**
+   * Renumbers cells so that the numbers reflect the order in which they were created
+   */
   public void renumberCells() {
     int num = 1;
     for (Cell cell : cells) {
@@ -154,4 +140,19 @@ class Record {
       num++;
     }
   }
+
+  //DELETE IN TRAVERSER
+  /**
+   * Checks to see if the last cell .equals() any other cell in the record..
+   *
+   * @return Returns the index of the cell that .equals() the last cell, or else returns -1.
+   */
+  public int equals() {
+    Cell c = getLastCell();
+    for (int i = 0; i < cells.size() - 1; i++) {
+      if (cells.get(i).equals(c)) return (i + 1);
+    }
+    return -1;
+  }
+
 }
