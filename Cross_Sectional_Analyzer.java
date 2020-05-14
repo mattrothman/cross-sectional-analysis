@@ -26,6 +26,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	private Wand wand;
 	private double minArea;
 	private int traverseDistance = 10;
+	private boolean preprocess;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private double pixelSize;
@@ -313,8 +314,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		Boolean runPlugin = initialOptions(unit);
 		if(!runPlugin) return;
 		//Preprocess image
-		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
-		imp.updateAndDraw();
+		if (preprocess == true) {
+			ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
+			imp.updateAndDraw();
+		}
 		//Setup MouseListener for user-edit mode
 		canvas = imp.getCanvas();
 		canvas.addMouseListener(this);
@@ -344,7 +347,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		this.mouseEnabled = false;
 
 		//Deletion Mode
-    Boolean deletionLoop = showDeletionDialog1();
+		Boolean deletionLoop = showDeletionDialog1();
 		if (deletionLoop) {
       deleteCells();
       this.record.renumberCells();
@@ -352,7 +355,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
       traverser.drawAllCells();
       traverser.drawDeletedCells(deletedCells);
 
-      //Enter Deletion Loop
+			//Enter Deletion Loop
       while (deletionLoop) {
         deletionLoop = showDeletionDialog2();
         if (deletionLoop) {

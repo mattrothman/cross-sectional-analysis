@@ -1,44 +1,40 @@
-//To do
-//Create wrapper class "CellCollection" or something like that, holds a hashmap of cells, where key is the number label, value is the cell object
 
-//import java.util.ArrayList;
-import ij.plugin.filter.Analyzer;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.lang.Math;
 import java.util.Arrays;
 import ij.*;
-import java.util.ArrayList;
-import java.util.*;
+
 
 
 /**
-Cell class holds a representation of a cell by storing a list of x and y coordinates of its parimeter
+Cell class holds a representation of a cell by storing a list of x and y coordinates of its perimeter`
 */
 
-class Cell {
-  //private int[] xpoints;
-  //private int[] ypoints;
-  private double area;
-  private Polygon shape;
-  private int startx;
-  private int starty;
-  public int cellNum;
-  //https://books.google.com/books?id=YEm5BQAAQBAJ&pg=PA735&lpg=PA735&dq=roundness+range+of+cells&source=bl&ots=EnoKFIoelk&sig=ACfU3U0FxVJIPjL3KEJtNMSTg0wchFnIWw&hl=en&ppis=_c&sa=X&ved=2ahUKEwiV1fDO8r3nAhUUoZ4KHY9DA_IQ6AEwDXoECAoQAQ#v=onepage&q=roundness%20range%20of%20cells&f=false
-  //Acorrding to link, roundness or a normal cell is 0.43-0.97
-  //and roundness of an abnormal cell is 0.06-0.87
-  //Starting value of
-  private static final double minRoundness  = 0.2; //This will change
-  //declare a center coordinate
+//TO DO: change the name "startx" and "starty" to centerX and centerY
+  //TO DO: startx and starty don't need to be in the constructor
+  //TO DO: remove rectangle import
 
-  public Cell(int[] xpoints, int[] ypoints, int startx, int starty, int cellNum) { //(int[] newXpoints, int[] newYpoints, int newCellId) {
+class Cell {
+
+  private double area;  // Area of the cell in pixels
+  private Polygon shape; // Polygon shape- contains an array of x and y points that make the coordinates of the cell
+  private int startx; // The x coordinate of the cell number label
+  private int starty; // The y coordinate of the cell number label
+  public int cellNum; // The cell number
+
+
+
+  public Cell(int[] xpoints, int[] ypoints, int startx, int starty, int cellNum) {
+    //Wand returns polygon with unwanted trailing 0's at the end
     int end = xpoints.length;
-    for (int i = xpoints.length -1; i > 0; i--) {
+    for (int i = xpoints.length -1; i > 0; i--) { //loops through and finds the index where the 0's start
       if ((xpoints[i] != 0) || (ypoints[i] != 0)){
         end = i + 1;
         break;
       }
     }
+    //copies over meaningful part of the array so we only get actual coordinates in our cells
     int[] xp = Arrays.copyOfRange(xpoints, 0, end);
     int[] yp = Arrays.copyOfRange(ypoints, 0, end);
     Polygon cell = new Polygon(xp, yp, xp.length);
@@ -48,112 +44,32 @@ class Cell {
     this.cellNum = cellNum;
   }
 
-  public boolean contains(int xpoint, int ypoint) {
-    return shape.contains(xpoint, ypoint);
-
-  }
-
 
   /**
-   * Centers the point made with startx and starty so the cell number is in a good spot.
+   * Centers the point in the middle of the cell so the cell number is in a good spot. This value is stored in the
+   * startx and starty
    */
   public void centerPoints() {
     int countx = 0;
     int county = 0;
-    for (int i = 0; i < shape.npoints; i++) {
+    for (int i = 0; i < shape.npoints; i++) { //adds up all the x and y points in the cell
       countx += shape.xpoints[i];
       county += shape.ypoints[i];
     }
-    startx = countx/shape.npoints;
-    starty = county/shape.npoints;
+    startx = countx/shape.npoints; // divides total x by number of points to get the average x
+    starty = county/shape.npoints; // divides total y by number of points to get the average y
   }
-//
-//  public static double pixelArea(Polygon shape) {
-//
-//      int areaTotal = 0;
-//      for (int i = 0; i < shape.npoints - 2; i++) {
-//        areaTotal += -1 * shape.ypoints[i] * shape.xpoints[i+1] + shape.xpoints[i] * shape.ypoints[i+1];
-//      }
-//      areaTotal += -1 * shape.ypoints[shape.npoints-1] * shape.xpoints[0] + shape.xpoints[shape.npoints-1] * shape.ypoints[0];
-//      areaTotal += Math.abs(areaTotal);
-//      return areaTotal;
-////    area = 0
-////    for i in [0, N - 2]:
-////    area += -p[i].y * p[i+1].x + p[i].x * p[i+1].y
-////    area += -p[N-1].y * p[0].x + p[N-1].x * p[0].y
-////    area = 0.5 * abs(area)
-//
-//  }
-
-  public void logPoints(){
-
-    IJ.log("\tX Points: ");
-    for (int xpoint : shape.xpoints)
-    {
-      IJ.log(Integer.toString(xpoint));
-    }
-    IJ.log("\tY Points: ");
-    for (int ypoint : shape.ypoints)
-    {
-      IJ.log(Integer.toString(ypoint));
-    }
-
-  }
-
-  public Polygon reducePoints(int reduction) {
-    int reducedLength = shape.npoints/reduction + 1;
-    int[] reducedX = new int[reducedLength];
-    int[] reducedY = new int[reducedLength];
-
-    for (int i = 0; i < shape.npoints; i += reduction) {
-      reducedX[i/reduction] = shape.xpoints[i];
-      reducedY[i/reduction] = shape.ypoints[i];
-
-    }
-    Polygon reduced = new Polygon(reducedX, reducedY, reducedLength);
-    return reduced;
-
-  }
-
 
 
   public void updateCellNum(int cellNum) {
       this.cellNum = cellNum;
   }
+
+
   /**
-  * Returns true if either:
-  *   (1) p's outline has points that make up >= 20% of shape's outline
-  *   (2) shape's outline has points that make up >= 20% of the outline of p
-  * @param p
-  * @return Whether p is the same cell as this cell
-  */
-  public boolean sameCell(Polygon p) {
-    int n = shape.npoints;
-    if(p.npoints < n) n = p.npoints;
-
-    int[] px = p.xpoints;
-    int[] py = p.ypoints;
-    int[] sx = shape.xpoints;
-    int[] sy = shape.ypoints;
-
-
-    double samePoints = 0;
-    for (int i = 0; i < n; i++){
-      if((px[i] == sx[i]) && (py[i] == sy[i])){
-        samePoints++;
-      }
-    }
-
-    double shape_npoints = (double) (shape.npoints);
-    double p_npoints = (double) (p.npoints);
-    // If the shared points make up >= 20% of shape's outline, return true
-    if (samePoints/shape_npoints >= 0.2) return true;
-    // If the shared points make up >= 20% of p's outline, return true
-    if (samePoints/p_npoints >= 0.2) return true;
-    return false;
-  }
-
-  // Unfortunately the imageJ method using getArea was private so I copied the code over.
+   * Copied over from a private method in imageJ: Finds the number of pixels in the cell. The real area can be calculated
+   * by multiplying the number of pixels by the calibrated area of each pixel.
+   */
   public static final double calculateArea(Polygon p) {
     if (p==null) return Double.NaN;
     int carea = 0;
@@ -165,6 +81,8 @@ class Cell {
     }
     return (Math.abs(carea/2.0));
   }
+
+  //*****************************DEBGUGGING METHODS BELOW
 
   //DEBGUGGING METHOD
   public int getstartx(){
@@ -181,28 +99,44 @@ class Cell {
     return cellNum;
   }
 
-  //https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3544517/
-  //Roundness is based on the above article
-  public boolean roundness(){
-    Rectangle bounds = shape.getBounds();
-    double height = bounds.getHeight();
-    double width = bounds.getWidth();
-    double length = width;
-    if(height > width){
-      length = height;
+  public double getArea() { return area; }
+
+  public Polygon getShape() { return shape; }
+
+
+  /**
+   * Creates a log of total points so that they can easily be plotted in excel for debugging purposes
+   */
+  public void logPoints(){
+
+    IJ.log("\tX Points: ");
+    for (int xpoint : shape.xpoints)
+    {
+      IJ.log(Integer.toString(xpoint));
     }
-    double roundness = this.area/(Math.pow(length, 2.0));
-    if (roundness < minRoundness){
-      return false;
+    IJ.log("\tY Points: ");
+    for (int ypoint : shape.ypoints)
+    {
+      IJ.log(Integer.toString(ypoint));
     }
-    else{
-      return true;
-    }
+
   }
+
+  /**
+   * ToString method that prints the x and y point arrays
+   * @return
+   */
+  public String toString(){
+    String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.ypoints);
+    return toString;
+
+  }
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   //This method will not be used in final implementation!
   //This method exists so we can get a range for the roundness or our cells
   //So that we can adjust our minRoundness value
+  //FIND IN TRAVERSER
   public double calcRoundness(){
     Rectangle bounds = shape.getBounds();
     double height = bounds.getHeight();
@@ -215,12 +149,15 @@ class Cell {
     return roundness;
   }
 
-  public double getArea() { return area; }
+  // FIND IN TRAVERSER
+  public boolean contains(int xpoint, int ypoint) {
+    return shape.contains(xpoint, ypoint);
 
-  public Polygon getShape() { return shape; }
+  }
 
   // @Override
-	// @SuppressWarnings("unchecked")
+  // @SuppressWarnings("unchecked")
+  //DELETE IN TRAVERSER FIRST
   public Boolean equals(Cell c){
     Polygon p = c.getShape();
     int[] xp = p.xpoints;
@@ -237,13 +174,6 @@ class Cell {
     if(area == c.getArea()) return true;
     if((area - c.getArea() <= 2) || (-area + c.getArea() <= 2)) return true;
     else return false;
-  }
-
-
-  public String toString(){
-    String toString = "X-Points: " + Arrays.toString(shape.xpoints) + "\n Y-Points: " + Arrays.toString(shape.ypoints);
-    return toString;
-
   }
 
 }
