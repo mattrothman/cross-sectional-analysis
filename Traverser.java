@@ -296,9 +296,6 @@ public class Traverser {
     if (c.getArea() > minArea && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) {
 
       addCell(c);
-
-      int eq = record.equals();
-
       drawCell(c);
 
       if (DEBUG) {

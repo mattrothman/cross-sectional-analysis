@@ -62,15 +62,18 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
     GenericDialog gd = new GenericDialog("Cross-Sectional-Analyzer Setup");
 		traverseDistance = 10;
 		minArea = 825.0 * pixelSize * pixelSize;
+
 		while(true){
 			gd = new GenericDialog("Cross Analyzer Setup");
 			gd.addNumericField("Traverse Distance (pixels)", traverseDistance, 0);
 			gd.addNumericField("Minimum Cell Area (square " + unit + ")", minArea, 0);
+			gd.addCheckbox("Preprocessing", true);
 			gd.addHelp(getHelpInitialOptions());
 	    gd.showDialog();
 			if (gd.wasCanceled()) return false;
 	    traverseDistance = (int)gd.getNextNumber();
-	    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
+	    minArea = (double)gd.getNextNumber();
+			preprocess = gd.getNextBoolean();
 			if((traverseDistance < 1) && (minArea < 0)){
 				traverseDistance = 10;
 				minArea = 825.0 * pixelSize * pixelSize;
@@ -89,6 +92,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 			}
 			break;
 		}
+		minArea = minArea/(pixelSize * pixelSize);
 		return true;
   }
 

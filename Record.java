@@ -140,19 +140,4 @@ class Record {
       num++;
     }
   }
-
-  //DELETE IN TRAVERSER
-  /**
-   * Checks to see if the last cell .equals() any other cell in the record..
-   *
-   * @return Returns the index of the cell that .equals() the last cell, or else returns -1.
-   */
-  public int equals() {
-    Cell c = getLastCell();
-    for (int i = 0; i < cells.size() - 1; i++) {
-      if (cells.get(i).equals(c)) return (i + 1);
-    }
-    return -1;
-  }
-
 }
