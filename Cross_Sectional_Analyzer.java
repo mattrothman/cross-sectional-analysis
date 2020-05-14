@@ -27,6 +27,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	private Wand wand;
 	private double minArea;
 	private int traverseDistance = 10;
+	private boolean preprocess;
 	private int        width;           // Width of the original image
 	private int        height;          // Height of the original image
 	private double pixelSize;
@@ -174,18 +175,22 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	public Boolean initialOptions(String unit) {
     GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
 		traverseDistance = 10;
-		minArea = 825.0 * pixelSize * pixelSize;
+		minArea = 3000.0 * pixelSize * pixelSize;
+
 		while(true){
 			gd = new GenericDialog("Cross Analyzer Setup");
 			gd.addNumericField("Traverse Distance (pixels)", traverseDistance, 0);
 			gd.addNumericField("Minimum Cell Area (square " + unit + ")", minArea, 0);
+			gd.addCheckbox("Preprocessing", true);
 	    gd.showDialog();
 			if (gd.wasCanceled()) return false;
 	    traverseDistance = (int)gd.getNextNumber();
 	    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
+	    preprocess = gd.getNextBoolean();
 			if((traverseDistance < 1) && (minArea < 0)){
 				traverseDistance = 10;
 				minArea = 825.0 * pixelSize * pixelSize;
+				//minArea = 825.0;
 				IJ.showMessage("Traverse Distance cannot be less than 1 pixel and Minimum Cell Area cannot be negative. Please enter valid traverse inputs.");
 				continue;
 			}
@@ -196,6 +201,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	    }
 			else if (minArea < 0) {
 				minArea = 825.0 * pixelSize * pixelSize;
+				//minArea = 825.0;
 	      IJ.showMessage("Minimum Cell Area cannot be negative. Please enter a valid minimum cell area.");
 				continue;
 			}
@@ -243,8 +249,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		Boolean runPlugin = initialOptions(unit);
 		if(!runPlugin) return;
 		//Preprocess image
-		ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
-		imp.updateAndDraw();
+		if (preprocess == true) {
+			ip.setAutoThreshold(AutoThresholder.Method.Mean, true);
+			imp.updateAndDraw();
+		}
 		//Setup MouseListener for user-edit mode
 		canvas = imp.getCanvas();
 		canvas.addMouseListener(this);
@@ -270,7 +278,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		}
 
 		//Deletion Mode
-    Boolean deletionLoop = showDeletionDialog1();
+		Boolean deletionLoop = showDeletionDialog1();
 		if (deletionLoop) {
       deleteCells();
       this.record.renumberCells();
@@ -278,7 +286,7 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
       traverser.drawAllCells();
       traverser.drawDeletedCells(deletedCells);
 
-      //Enter Deletion Loop
+			//Enter Deletion Loop
       while (deletionLoop) {
         deletionLoop = showDeletionDialog2();
         if (deletionLoop) {

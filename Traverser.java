@@ -218,7 +218,7 @@ public class Traverser {
     ic.update(g);
     //Cell c = record.cells.get(0);
     Cell c;
-    for(int i = 0; i < record.size(); i++){
+    for(int i = 0; i < record.size(); i++) {
       c = record.cells.get(i);
       drawCell(c);
     }
