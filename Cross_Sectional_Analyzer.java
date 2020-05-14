@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import ij.measure.ResultsTable;
 import ij.measure.*;
 
-
 /**
  * ImageJ plugin to measure the areas of skeletal muscle fibers.
  *
@@ -33,9 +32,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 	private Record record;
 	private Traverser traverser;
 	private ImageCanvas canvas;
+	private Boolean mouseEnabled = true;
 	//Variables for Dialog
-	private String userTitle = "User Edit Mode";
-	private String userText = "Use the Brush Tool to clarify cell borders that the program is not recognizing. \nIgnore non-cell regions that have been outlined and numbered; you will be able to remove these items from the image and readout at another point in this program. \nClick OK when you are done editing, and the program will re-run.";
+	private String userTitle = "Edit Cells";
+	private String userText = "Cells may not be recognized due to thin or broken borders.\nEdge cells that are cut off by the image will not be included.\nCells that share a broken border with an edge cell will not be included until the border is fixed.\nCells that share a broken or thin border may be considered one cell until the border is fixed.\n \nUse the Brush Tool to edit cell borders.\n \nIf a fully enclosed cell is not included after editing, you may need to re-run the plugin and\ndecrease the Traverse Distance and/or Minimum Cell Area.\n \nWhen you are done editing, press \"OK\" and the cell outlines will be redrawn to reflect your edits.";
 	private String deletePrompt = "";
 	private GenericDialog gd = new GenericDialog("");
 	private ArrayList<Cell> cellsToBeDeleted = new ArrayList<Cell>();
@@ -53,7 +53,76 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		return DOES_ALL;
 	}
 
-	public boolean showDeletionDialog1(){
+	/**
+	 * Shows a dialog that allows the user to set the Traverse Distance, Minimum Cell Area, and opt out of pre-processing
+	 * @return returns false if the dialog box is exited or if "Cancel" is selected
+	 */
+	private Boolean initialOptions(String unit) {
+    GenericDialog gd = new GenericDialog("Cross-Sectional-Analyzer Setup");
+		traverseDistance = 10;
+		minArea = 825.0 * pixelSize * pixelSize;
+		while(true){
+			gd = new GenericDialog("Cross Analyzer Setup");
+			gd.addNumericField("Traverse Distance (pixels)", traverseDistance, 0);
+			gd.addNumericField("Minimum Cell Area (square " + unit + ")", minArea, 0);
+			gd.addHelp(getHelpInitialOptions());
+	    gd.showDialog();
+			if (gd.wasCanceled()) return false;
+	    traverseDistance = (int)gd.getNextNumber();
+	    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
+			if((traverseDistance < 1) && (minArea < 0)){
+				traverseDistance = 10;
+				minArea = 825.0 * pixelSize * pixelSize;
+				IJ.showMessage("Traverse Distance cannot be less than 1 pixel and Minimum Cell Area cannot be negative. Please enter valid traverse inputs.");
+				continue;
+			}
+	    else if (traverseDistance < 1) {
+				traverseDistance = 10;
+	      IJ.showMessage("Traverse Distance cannot be less than 1 pixel. Please enter a valid traverse distance.");
+				continue;
+	    }
+			else if (minArea < 0) {
+				minArea = 825.0 * pixelSize * pixelSize;
+	      IJ.showMessage("Minimum Cell Area cannot be negative. Please enter a valid minimum cell area.");
+				continue;
+			}
+			break;
+		}
+		return true;
+  }
+
+	/**
+	 * Returns a string for the Help Dialog
+	 * @return a string for the Help Dialog
+	 */
+	private String getHelpInitialOptions() {
+		Boolean isPencil = true;
+		String ctrlString = IJ.isMacintosh()? "<i>cmd</i>":"<i>ctrl</i>";
+		return
+			 "<html>"
+			+"<font size=+1>"
+			+"<b>Help\n</b>"
+			+" <br>"
+			+"Please calibrate your image before using Cross-Sectional-Analyzer.\n"
+			+" <br>"
+			+"If the unit of \"Minimum Cell Area\" does not reflect the unit of your calibration, please close this plugin and re-calibrate globally.\n"
+			+" <br>"
+			+"The pre-set \"Traverse Distance\" and \"Minimum Cell Area\" values are calculated based on the dimensions of the image, and are suitable for most images.\n"
+			+" <br>"
+			+"If fully enclosed cells were not included after editing at some \"Traverse Distance\" and \"Minimum Cell Area\", we recommend decreasing the \"Traverse Distance\" to 5 pixels and decreasing \"Minimum Cell Area\".\n"
+			+" <br>"
+			+"If an excessive number of non-cell regions were outlined and numbered as cells, increase the \"Minimum Cell Area\".\n"
+			+" <br>"
+			+"Flashing during cell-editing is normal. If the cell outlines disapear, dragging the mouse on the image will make the outlines reappear.\n"
+			+" <br>"
+			+"</font>";
+	}
+
+	/**
+	 * Shows a dialog that allows the user to delete unwanted cells.
+	 * @return returns false if the dialog box is exited or if "Continue" is selected
+	 */
+	private boolean showDeletionDialog1(){
 		GenericDialog gd = new GenericDialog("Delete Cells");
 		gd.setResizable(true);
 		gd.addMessage("Check the box next to a cell to delete it:");
@@ -68,14 +137,15 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		}
 
 		gd.addCheckboxGroup((size/6 + 1), 6, labels, states);
-		gd.addMessage("Press DELETE CELLS to delete the selected cells. \nPress CONTINUE to view results for the current " + record.size() + " cells." );
-    gd.enableYesNoCancel("Delete Cells", "Continue");
-    gd.hideCancelButton();
-    gd.showDialog();
+		gd.addMessage("Press \"Delete Cells\" to delete the selected cells. \nPress \"Continue\" to view results for the current " + record.size() + " cells." );
+		gd.enableYesNoCancel("Delete Cells", "Continue");
+		gd.hideCancelButton();
+		WindowTools.addScrollBars(gd);
+		gd.showDialog();
 
-    if (!gd.wasOKed()) return false;
+		if (!gd.wasOKed()) return false;
 
-    for(int i = 0; i < size; i++){
+		for(int i = 0; i < size; i++){
 			if (gd.getNextBoolean()){
 				cellsToBeDeleted.add(record.cells.get(i));
 				deletedCells.add(record.cells.get(i));
@@ -84,32 +154,14 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		}
 		if (DEBUG) IJ.log("deletedCells.size() = " + deletedCells.size());
 		return true;
-  }
+	}
 
-	public void deleteCells() {
-		int index = 0;
-		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
-			index = cellsToBeDeleted.get(i).cellNum - 1;
-			this.record.removeCell(index);
-		}
-		cellsToBeDeleted.clear();
-  }
 
-	public void renumberDeletedCells() {
-		int num = record.size() + 1;
-    for (Cell cell : this.deletedCells) {
-      cell.updateCellNum(num);
-      num++;
-    }
-  }
-
-	public void addCells() {
-		for(Cell cell : this.cellsToBeAdded){
-			this.record.addCell(cell);
-		}
-  }
-
-	public Boolean showDeletionDialog2(){
+	/**
+	 * Shows a dialog that allows the user to delete unwanted cells and/or re-add deleted cells.
+	 * @return boolean returns false if the dialog box is exited or if "Continue" is selected
+	 */
+	private Boolean showDeletionDialog2(){
 		GenericDialog gd = new GenericDialog("Delete Cells");
 		gd.setResizable(true);
 		gd.pack();
@@ -139,13 +191,13 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 			c++;
 		}
 		gd.addCheckboxGroup((size2/6 + 1), 6, labels2, states2);
-		//gd.addCheckboxGroup((size1/6 + 1), 6, labels1, states1);
-		gd.addMessage("Press DELETE CELLS to delete and/or re-add the selected cells. \nPress CONTINUE to view results for the current " + record.size() + " cells." );
-    gd.enableYesNoCancel("Delete Cells", "Continue");
-    gd.hideCancelButton();
-    gd.showDialog();
+		gd.addMessage("Press \"Delete Cells\" to delete and/or re-add the selected cells. \nPress \"Continue\" to view results for the current " + record.size() + " cells." );
+		gd.enableYesNoCancel("Delete Cells", "Continue");
+		gd.hideCancelButton();
+		WindowTools.addScrollBars(gd);
+		gd.showDialog();
 
-    if (!gd.wasOKed()) return false;
+		if (!gd.wasOKed()) return false;
 
 		for(int i = 0; i < size1; i++){
 			if (gd.getNextBoolean()){
@@ -169,69 +221,87 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		if (DEBUG) IJ.log("deletedCells.size() = " + cellsToBeAdded.size());
 
 		return true;
-  }
+	}
 
-	public Boolean initialOptions(String unit) {
-    GenericDialog gd = new GenericDialog("Cross Analyzer Setup");
-		traverseDistance = 10;
-		minArea = 825.0 * pixelSize * pixelSize;
-		while(true){
-			gd = new GenericDialog("Cross Analyzer Setup");
-			gd.addNumericField("Traverse Distance (pixels)", traverseDistance, 0);
-			gd.addNumericField("Minimum Cell Area (square " + unit + ")", minArea, 0);
-	    gd.showDialog();
-			if (gd.wasCanceled()) return false;
-	    traverseDistance = (int)gd.getNextNumber();
-	    minArea = (double)gd.getNextNumber()/(pixelSize * pixelSize);
-			if((traverseDistance < 1) && (minArea < 0)){
-				traverseDistance = 10;
-				minArea = 825.0 * pixelSize * pixelSize;
-				IJ.showMessage("Traverse Distance cannot be less than 1 pixel and Minimum Cell Area cannot be negative. Please enter valid traverse inputs.");
-				continue;
-			}
-	    else if (traverseDistance < 1) {
-				traverseDistance = 10;
-	      IJ.showMessage("Traverse Distance cannot be less than 1 pixel. Please enter a valid traverse distance.");
-				continue;
-	    }
-			else if (minArea < 0) {
-				minArea = 825.0 * pixelSize * pixelSize;
-	      IJ.showMessage("Minimum Cell Area cannot be negative. Please enter a valid minimum cell area.");
-				continue;
-			}
-			break;
+	/**
+	 * Helper method that deletes cells that have been "checked" in a deletion dialog
+	 */
+	private void deleteCells() {
+		int index = 0;
+		for(int i = cellsToBeDeleted.size()-1; i >= 0; i--){
+			index = cellsToBeDeleted.get(i).cellNum - 1;
+			this.record.removeCell(index);
 		}
-		return true;
-  }
+		cellsToBeDeleted.clear();
+	}
+
+	/**
+	 * Helper method that re-adds cells that have been "checked" in a deletion dialog
+	 */
+	private void addCells() {
+		for(Cell cell : this.cellsToBeAdded){
+			this.record.addCell(cell);
+		}
+	}
+
+	/**
+	 * Helper method that renumbers the cells in record after a deletion dialog,
+	 * so that the cell numbering reflects any cell deletions/additions
+	 */
+	private void renumberDeletedCells() {
+		int num = record.size() + 1;
+		for (Cell cell : this.deletedCells) {
+			cell.updateCellNum(num);
+			num++;
+		}
+	}
 
 	/**
 	 * Asks the user if they would like to save the final cell selection as an overlay for later use
 	 */
 	private void overLayPrompt() {
-		String[] choices = new String[]{"red", "blue", "green"};
-		GenericDialog gd = new GenericDialog("Save Overlay");
-		gd.addMessage("Would you like to save an overlay of the cells?");
+		GenericDialog gd = new GenericDialog("Save Outline");
+		gd.addMessage("Would you like to save an image of the outlined and numbered cells?");
 		gd.showDialog();
 		if (gd.wasCanceled()) return;
-		Color color = new ColorChooser("Choose a color for overlay", new Color(0x03fcf4), false).getColor();
+		Color color = new ColorChooser("Choose a color for the outline of the numbered cells:", new Color(0x03fcf4), false).getColor();
 		CellOverlay co = new CellOverlay(this.record, this.height, this.width, color);
 		co.createAndSave();
 	}
 
-	public void mouseClicked(MouseEvent e) {
-		//traverser.drawAllCells();
+	/**
+	 * Returns a string of the directions for "How To Merge Images"
+	 * @return a string of the directions for "How To Merge Images"
+	 */
+	private String mergeImagesText() {
+		return
+			"To create a composite image of the outputed image of the outlined cells,\n"
+			+"\"Overlay.tif,\" and an image of cells, \"Cells.tif,\" open both images in ImageJ.\n"
+			+"Click on \"Cells.tif\" and use Image>Type>RGB Color.\n"
+			+"Next, use Image>Color>Merge Channels.\n"
+			+"Select \"Overlay.tif\" for C1 (red), C2 (green), and C3 (blue).  Select \"Cells.tif\" for C4 (gray).\n"
+			+"When the composite image opens, use Image>Type>RGB Color.";
 	}
-	public void mousePressed(MouseEvent e){
-		traverser.drawAllCells();
-	}
+
+	/**
+	 * MouseListener methods that prompt the cell outlines to be redrawn during cell editing
+	 */
+	public void mouseClicked(MouseEvent e) {}
 	public void	mouseEntered(MouseEvent e){}
 	public void	mouseExited(MouseEvent e){}
 	public void	mouseReleased(MouseEvent e){
+		if (!this.mouseEnabled) return;
+		traverser.drawAllCells();
+	}
+	public void mousePressed(MouseEvent e){
+		if (!this.mouseEnabled) return;
 		traverser.drawAllCells();
 	}
 
+	/**
+	 * Runs the Plugin
+	 */
 	public void run(ImageProcessor ip) {
-		//if (!showDialog()) return;
 		this.width = ip.getWidth();
 		this.height = ip.getHeight();
 		this.wand = new Wand(ip);
@@ -251,14 +321,16 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		this.record = new Record();
 		this.traverser = new Traverser(imp, ip, minArea, traverseDistance, record);
 		WaitForUserDialog wait = new WaitForUserDialog(userTitle, userText);
+		wait.setResizable(true);
 
 		//Enter Traverse and Edit Loop
 		while(true){
 			traverser.traverse();
-			this.deletePrompt = " " + record.size() + " cells identified\n To clarify cell borders that the program is not recognizing, press \"Edit Cells\".\n To delete non-cell regions that have been outlined and numbered, and to view readout, press \"Continue\".";
+			this.deletePrompt = "" + record.size() + " cells identified.\nTo edit cell borders that are incorrect or that have not been recognized, press \"Edit Cells\".\nTo delete unwanted cells, press \"Continue\".";
 			gd.addMessage(deletePrompt);
 			gd.enableYesNoCancel("Edit Cells", "Continue");
 			gd.hideCancelButton();
+			WindowTools.addScrollBars(gd);
 			gd.showDialog();
 			if (!gd.wasOKed()) break;
 			//If "Edit Cells" is selected, continue the loop.
@@ -268,6 +340,8 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 			wait = new WaitForUserDialog(userTitle, userText);
 			this.gd = new GenericDialog("");
 		}
+		//Disable mouseListener so the flashing stops after "Edit Cells"
+		this.mouseEnabled = false;
 
 		//Deletion Mode
     Boolean deletionLoop = showDeletionDialog1();
@@ -295,39 +369,10 @@ public class Cross_Sectional_Analyzer implements PlugInFilter, MouseListener {
 		//Display Results Table
 		this.record.createTable(pixelSize, unit);
 		traverser.drawAllCells();
-		// traverser.finalize();
-		// finalDrawing();
 		overLayPrompt();
+		this.gd = new GenericDialog("How To Merge Images");
+		gd.addMessage(mergeImagesText());
+		WindowTools.addScrollBars(gd);
+		gd.showDialog();
 	}
 }
-
-//        Calibration cal = imp.getCalibration();
-//        double pixel = cal.pixelWidth;
-//        IJ.log(Double.toString(pixel));
-//        Polygon cell1 = record.cells.get(0).getShape();
-//        int[] x = new int[]{10,10,30,30};
-//        int[] y = new int[]{40,40,50,50};
-//        Polygon square = new Polygon(x,y,4);
-//        double pixelArea = Cell.pixelArea(square);
-//
-//        double cellArea = pixelArea * pixel * pixel;
-//        IJ.log("Square Area: " + Double.toString(cellArea));
-//
-//        Cell cell = new Cell(cell1.xpoints, cell1.ypoints, 20,45, 3);
-//        IJ.log("Cell1 Area: " + Double.toString(cell.calculateArea(cell1) * pixel * pixel));
-
-//doesn't work
-// public void finalDrawing() {
-// 	//ImageProcessor ip = imp.getProcessor();
-// 	imp.updateAndDraw();
-// 	ip.setLineWidth(2);
-// 	ip.setFontSize(20);
-// 	ip.setColor(new Color(0x03fcf4));
-// 	for (Cell curr : this.record.cells) {
-// 			ip.drawPolygon(curr.getShape());
-// 			String num = Integer.toString(curr.getcellNum());
-// 			ip.drawString(num, curr.getstartx(), curr.getstarty());
-// 	}
-// 	imp.updateAndDraw();
-// 	imp.show();
-// }
