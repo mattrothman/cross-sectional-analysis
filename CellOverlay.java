@@ -65,7 +65,7 @@ public class CellOverlay {
         for (Cell curr : cellRec.cells) {
             ip.drawPolygon(curr.getShape());
             String num = Integer.toString(curr.getcellNum());
-            ip.drawString(num, curr.getstartx(), curr.getstarty());
+            ip.drawString(num, curr.getcenterX(), curr.getcenterY());
         }
     }
 
@@ -88,7 +88,7 @@ public class CellOverlay {
     public void drawNums(ImageProcessor ip, Record cellRec) {
         for (Cell curr : cellRec.cells) {
             String num = Integer.toString(curr.getcellNum());
-            ip.drawString(num, curr.getstartx(), curr.getstarty());
+            ip.drawString(num, curr.getcenterX(), curr.getcenterY());
         }
     }
 

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import ij.*;
 
 
-
 /**
 Cell class holds a representation of a cell by storing a list of x and y coordinates of its perimeter`
 */
@@ -78,19 +77,14 @@ class Cell {
     return (Math.abs(carea/2.0));
   }
 
-  //*****************************DEBGUGGING METHODS BELOW
-
-  //DEBGUGGING METHOD
   public int getcenterX(){
     return centerX;
   }
 
-  //DEBGUGGING METHOD
   public int getcenterY(){
     return centerY;
   }
 
-  //DEBGUGGING METHOD
   public int getcellNum(){
     return cellNum;
   }
@@ -99,6 +93,7 @@ class Cell {
 
   public Polygon getShape() { return shape; }
 
+  //*****************************DEBGUGGING METHODS BELOW
 
   /**
    * Creates a log of total points so that they can easily be plotted in excel for debugging purposes

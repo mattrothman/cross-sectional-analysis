@@ -35,7 +35,6 @@ import javax.net.ssl.*;
 import java.security.cert.*;
 import java.security.KeyStore;
 import java.nio.ByteBuffer;
-
 //for doWand
 import ij.macro.MacroRunner;
 import ij.plugin.BatchProcessor;
@@ -61,7 +60,7 @@ public class Traverser {
   private ImageCanvas ic;
   private Graphics g;
 
-  //Stolen code and comment, but a debug mode is probably a very good idea ???
+  //Stolen code and comment:
   // by declaring this static final, we allow javac to perform the test
   // at compile time rather than runtime, and remove debug code when
   // debug is false. thus there is *no* performance hit in non-debug mode
@@ -90,85 +89,24 @@ public class Traverser {
   }
 
   /**
-  * Traverses the image three times, and sets record equal to the record with the most cells.
-  */
-  public void getBestTraversal () {
-    traverse ();
-    Record record1 = this.record;
-    this.x = traverseDistance;
-    this.y = traverseDistance;
-    int size1 = record1.size();
-    IJ.showMessage("Finished Traversal 1: " + size1 + " cells");
-    Record emptyRecord1 = new Record();
-    traverse ();
-    Record record2 = this.record;
-    this.x = traverseDistance;
-    this.y = traverseDistance;
-    int size2 = record2.size();
-    IJ.showMessage("Finished Traversal 2: " + size2 + " cells");
-    Record emptyRecord2 = new Record();
-    traverse ();
-    Record record3 = this.record;
-    this.x = traverseDistance;
-    this.y = traverseDistance;
-    int size3 = record3.size();
-    IJ.showMessage("Finished Traversal 3: " + size3 + " cells");
-    Record bigRecord;
-    if (size3 >= size2 && size3 >= size1){
-      bigRecord = record3;
-    }
-    else if (size2 >= size3 && size2 >= size1){
-      bigRecord = record2;
-    }
-    else{
-      bigRecord = record1;
-    }
-    this.record = bigRecord;
-    drawAllCells();
-  }
-
-  /**
   * Traverses the image, adding new cells to the record class when appropriate.
   */
   public void traverse () {
     g.setColor(Color.CYAN);
     ic.update(g);
     while (this.y < this.height) {
-      // IJ.log("Checking (" + Integer.toString(this.x) + "," + Integer.toString(this.y) + ")");
-      // IJ.log("CHANGES");
       traverseOnce();
     }
   }
 
   /**
-  * Traverses to the next point in the image.
+  * Traverses to the next point in the image, and calls doWand().
   * If the point is inside a new, valid cell, a new cell is created and added to the record class.
   */
   public void traverseOnce () {
-    //int recorded = isRecorded();
-    //if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    //if (recorded == -1) {
-    Wand wand = doWand(x, y, TOLERANCE);
-   /** }
-    else{
-      if (DEBUG) IJ.log("(" + this.x + "," + this.y + ") is contained within cell " + recorded);
-    } **/
+    doWand(x, y, TOLERANCE);
     nextPoint();
   }
-
-  /**
-  * Checks whether the next point is already inside of a recorded cell.
-  * @return Whether or not the next point is already inside of a recorded cell
-  * OR
-  * @return Either the number of cell that the next point is inside,
-  * or -1 if the next point is not already inside of a recorded cell.
-  */
-  /**
-  public int isRecorded () { //OR public int isRecorded(){
-    return record.whichCell(this.x, this.y);
-  } **/
-
-
 
   /**
   * Creates a new Cell object and adds it to Record class
@@ -191,6 +129,10 @@ public class Traverser {
     this.x = nextX;
   }
 
+  /**
+   * Draws the given cell
+   * @param cell The cell to be drawn
+   */
   public void drawCell(Cell cell){
     Cell c = new Cell(cell.getShape().xpoints, cell.getShape().ypoints, cell.getcellNum());
     Polygon p = c.getShape();
@@ -212,12 +154,13 @@ public class Traverser {
     g.drawPolygon(p.xpoints, p.ypoints, p.npoints);
   }
 
-  //This method draws every cell in the record
+  /**
+	 * Draws every cell in the record in cyan
+	 */
   public void drawAllCells(){
     this.g = ic.getGraphics();
     g.setColor(Color.CYAN);
     ic.update(g);
-    //Cell c = record.cells.get(0);
     Cell c;
     for(int i = 0; i < record.size(); i++) {
       c = record.cells.get(i);
@@ -225,12 +168,10 @@ public class Traverser {
     }
   }
 
-  //didn't work :(
-  // public void finalize(){
-  //   ic.paint(g);
-  // }
-
-  //This method draws every cell in the given cellsToBeDeleted
+  /**
+	 * Draws every cell in the given arraylist of cells in yellow
+   * @param deletedCells the given arraylist of cells
+	 */
   public void drawDeletedCells(ArrayList<Cell> deletedCells){
     g.setColor(Color.YELLOW);
     Cell c = record.cells.get(0);
@@ -241,10 +182,15 @@ public class Traverser {
     g.setColor(Color.CYAN);
   }
 
-  //Returns true if the height of the bounding rectangle of the cell is less than 1/3 the image Height
-  //And if the width of the bounding rectangle of the cell is less than 1/3 the image width
-
-  public Boolean cellBoundsSmallEnough(Cell c){
+  /**
+	 * Determines whether the bounding rectangle around a cell is small enough.
+   * This method is meant to help doWand avoid large, thin, cells that can occur when doWand clicks on the cell border.
+   * Returns true if the height of the bounding rectangle of the cell is less than 1/3 the image Height
+   * And if the width of the bounding rectangle of the cell is less than 1/3 the image width
+   * @param c the cell whose bounding box is being checked
+   * @return whether the bounding rectangle around a cell is small enough
+	 */
+  private Boolean cellBoundsSmallEnough(Cell c){
     Rectangle bounds = c.getShape().getBounds();
     int h = (int) bounds.getHeight();
     int w = (int) bounds.getWidth();
@@ -254,6 +200,11 @@ public class Traverser {
     return true;
   }
 
+  /**
+	 * Determines whether the given cell is an edge cell
+   * @param c the cell being checked
+   * @return whether the given cell is an edge cell
+	 */
   public boolean isEdgeCell(Cell c){
       int[] xpoints = c.getShape().xpoints;
       int[] ypoints = c.getShape().ypoints;
@@ -268,30 +219,31 @@ public class Traverser {
       return false;
   }
 
-
-  /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
-  public Wand doWand(int x, int y, double tolerance) {
+  /**
+   * Adapted from doWand method in ImageJ
+	 * This method calls the built-in wand tracing tool at the given (x,y) coordinates, at the given tolerance,
+   * and makes that polygon into a cell. If that cell is not too large or small to be a cell, is not an edge cell,
+   * and is a unique cell, it is added to the record and drawn.
+   * @param x the x coordinate at which the wand is called
+   * @param y the y coordinate at which the wand is called
+   * @param tolerance the tolerance for the wand
+	 */
+  public void doWand(int x, int y, double tolerance) {
 
     if (DEBUG) IJ.log("\nPossible new cell..");
     int imode = Wand.LEGACY_MODE;
-    //boolean smooth = false;
     Wand w = new Wand(ip);
     double t1 = ip.getMinThreshold();
     if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
       w.autoOutline(x, y, tolerance, imode);
     }
-
     else w.autoOutline(x, y, t1, ip.getMaxThreshold(), imode);
-    //If there is no cell here, but the outline we find is too small, ignore it
-
 
     int[] xpoints = w.xpoints;
     int[] ypoints = w.ypoints;
     Cell c = new Cell(xpoints, ypoints, 0);
 
-
     if (c.getArea() > minArea && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.cellAlreadyExists(c) && !record.sameCenterPoints(c)) {
-
       addCell(c);
       drawCell(c);
 
@@ -307,7 +259,6 @@ public class Traverser {
     else{
       if (DEBUG) IJ.log("Outline based on " + this.x + "," + this.y + " had too few points defining its outline\n");
     }
-
-    return w;
+    return;
   }
 }
