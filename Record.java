@@ -9,7 +9,7 @@ import ij.measure.ResultsTable;
 
 class Record {
 
-  // TO DO: rename arraySharesPoints
+
   public ArrayList<Cell> cells;
   private static final boolean DEBUG = false;
 
@@ -33,7 +33,7 @@ class Record {
    * Checks to see if a cell is the same as a prexisting cell in traverser by testing if the cell shares all
    * coordinates with another cell in record.
    **/
-  public boolean arraySharesPoints(Cell c) {
+  public boolean cellAlreadyExists(Cell c) {
     for (Cell cell : cells) {
       if (Arrays.equals(c.getShape().xpoints, cell.getShape().xpoints)) { // && Arrays.equals(c.getShape().ypoints, cell.getShape().ypoints)) {
 
@@ -42,34 +42,6 @@ class Record {
     }
     return false;
 
-  }
-
-
-  /**
-   * Returns which cell in record contains the given point.
-   *
-   * @param p
-   * @return Returns the cell in record that contains the given point, or else returns -1.
-   */
-  /**
-  public int whichCell(int x, int y) {
-    for (int i = 0; i < cells.size(); i++) {
-      Cell currCell = cells.get(i);
-      if (currCell.contains(x, y)) {
-        return (currCell.getcellNum());
-      }
-    }
-    return -1;
-  } **/
-
-
-  /**
-   * Returns the last cell.
-   *
-   * @return cell  The last cell added.
-   */
-  public Cell getLastCell() {
-    return cells.get(cells.size() - 1);
   }
 
 
@@ -92,15 +64,9 @@ class Record {
   }
 
 
-  /**
-   * Removes the last cell from cells.
-   */
-  public void removeLastCell() {
-    cells.remove(cells.size() - 1);
-  }
 
   /**
-   * Checks to see if we're about to draw overlapping cell nums (hopefully will catch repeat cells missed by arraySharesPoints)
+   * Checks to see if we're about to draw overlapping cell nums (hopefully will catch repeat cells missed by cellAlreadyExists)
    */
   public Boolean sameCenterPoints(Cell cell) {
     int centerX = cell.getcenterX();

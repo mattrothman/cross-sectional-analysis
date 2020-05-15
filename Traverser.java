@@ -243,6 +243,7 @@ public class Traverser {
 
   //Returns true if the height of the bounding rectangle of the cell is less than 1/3 the image Height
   //And if the width of the bounding rectangle of the cell is less than 1/3 the image width
+
   public Boolean cellBoundsSmallEnough(Cell c){
     Rectangle bounds = c.getShape().getBounds();
     int h = (int) bounds.getHeight();
@@ -266,19 +267,14 @@ public class Traverser {
       if (DEBUG) IJ.log("FINSISHED");
       return false;
   }
-//delete
-  public void print4(Cell c) {
-    for (int i = 0; i < 4; i++) {
-      if (DEBUG) IJ.log(Integer.toString(c.getShape().xpoints[i]));
-    }
-  }
+
 
   /** Adapted from doWand method in ImageJ. Changed to return a wand rather than an int */
   public Wand doWand(int x, int y, double tolerance) {
 
     if (DEBUG) IJ.log("\nPossible new cell..");
     int imode = Wand.LEGACY_MODE;
-    boolean smooth = false;
+    //boolean smooth = false;
     Wand w = new Wand(ip);
     double t1 = ip.getMinThreshold();
     if (t1==ImageProcessor.NO_THRESHOLD || (ip.getLutUpdateMode()==ImageProcessor.NO_LUT_UPDATE&& tolerance>0.0)) {
@@ -294,7 +290,7 @@ public class Traverser {
     Cell c = new Cell(xpoints, ypoints, 0);
 
 
-    if (c.getArea() > minArea && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.arraySharesPoints(c) && !record.sameCenterPoints(c)) {
+    if (c.getArea() > minArea && !isEdgeCell(c) && cellBoundsSmallEnough(c) && !record.cellAlreadyExists(c) && !record.sameCenterPoints(c)) {
 
       addCell(c);
       drawCell(c);
@@ -303,11 +299,11 @@ public class Traverser {
         IJ.showMessage("Added cell #" + c.getcellNum() + " based on point= " + c.getcenterX() + "," + c.getcenterY());
         IJ.log("Added cell #" + c.getcellNum() + " based on point= " + c.getcenterX() + "," + c.getcenterY());
         IJ.log("" + c.toString());
-        //IJ.log("Roundness: " + c.calcRoundness());
         IJ.log("Area: " + c.getArea());
         IJ.log("\n");
       }
      }
+
     else{
       if (DEBUG) IJ.log("Outline based on " + this.x + "," + this.y + " had too few points defining its outline\n");
     }
